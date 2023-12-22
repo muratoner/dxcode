@@ -1,0 +1,22 @@
+Oyun türleri
+
+-Logo basamak oyunu
+-Ağaç sulama hayvan besleme bir alan içerisinde 
+
+# Docs
+- https://cragl.cs.gmu.edu/teaching/cs325/phaser-1.1.6/examples/
+- https://newdocs.phaser.io/docs/3.70.0
+
+# Assets
+- https://kenney.nl/
+- https://itch.io/game-assets/free
+- https://craftpix.net/
+
+
+# Basic Codes
+- this.load.image('sky', 'assets/sky.png');
+- this.load.spritesheet('dude', 'assets/dude.png', { frameWidth: 32, frameHeight: 48 });
+- this.add.image(400, 300, 'sky');
+
+# Examples
+- https://phaser.io/tutorials/making-your-first-phaser-3-game/part1
