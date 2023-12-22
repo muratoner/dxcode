@@ -23,4 +23,8 @@ export default class Utilities {
 	public static getFontName() {
 		return 'FontName'
 	}
+
+	public static getCharacterName() {
+		return localStorage.getItem('characterSkin') || 'male'
+	}
 }

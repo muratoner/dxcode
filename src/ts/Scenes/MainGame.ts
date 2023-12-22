@@ -19,7 +19,8 @@ let spaceKey;
 let ctrlKey;
 let keys;
 let database: Database;
-let muteButton;
+let muteButton: Phaser.GameObjects.Sprite;
+let level
 
 type TItem = Phaser.Tilemaps.Tile
 const starPositions: number[] = []
@@ -60,12 +61,14 @@ export default class MainGame extends Phaser.Scene {
 		base = this
 
 		gameOver = false
+		level = 1
 		MainGame.Score = 0
 		MainGame.HighScore = 0
 
 		Utilities.LogSceneMethodEntry("MainGame", "create");
+		let character = Utilities.getCharacterName()
 
-		const image = this.add.sprite(this.cameras.main.width / 2, this.cameras.main.height / 2, 'arkaplan')
+		const image = this.add.sprite(this.cameras.main.width / 2, this.cameras.main.height / 2, 'talltrees')
 		const scaleX = this.cameras.main.width / image.width
 		const scaleY = this.cameras.main.height / image.height
 		const scale = Math.max(scaleX, scaleY)
@@ -84,7 +87,7 @@ export default class MainGame extends Phaser.Scene {
 		platforms.create(50, 250, 'ground');
 		platforms.create(750, 230, 'ground');
 
-		player = this.physics.add.sprite(100, 300, 'male');
+		player = this.physics.add.sprite(100, 300, character);
 
 		player.setCollideWorldBounds(true);
 
@@ -102,32 +105,27 @@ export default class MainGame extends Phaser.Scene {
 
 		this.anims.create({
 			key: 'left',
-			frames: this.anims.generateFrameNumbers('male', { start: 9, end: 10 }),
+			frames: this.anims.generateFrameNumbers(character, { start: 9, end: 10 }),
 			frameRate: 10,
 			repeat: -1,
 		});
 
 		this.anims.create({
 			key: 'turn',
-			frames: [ { key: 'male', frame: 0 } ],
+			frames: [ { key: character, frame: 0 } ],
 			frameRate: 20
 		});
 
 		this.anims.create({
 			key: 'right',
-			frames: this.anims.generateFrameNumbers('male', { start: 9, end: 10 }),
+			frames: this.anims.generateFrameNumbers(character, { start: 9, end: 10 }),
 			frameRate: 10,
 			repeat: -1
 		});
 
 		this.anims.create({
 			key: 'up',
-			frames: [ { key: 'male', frame: 1 } ] ,
-			frameRate: 20,
-		})
-		this.anims.create({
-			key: 'sleep',
-			frames: [ { key: 'male', frame: 5 } ] ,
+			frames: [ { key: character, frame: 1 } ] ,
 			frameRate: 20,
 		})
 
@@ -143,7 +141,7 @@ export default class MainGame extends Phaser.Scene {
 			fontSize: "32px",
 			fontFamily: 'FontName'
 		});
-		scoreText.setShadow(3, 3, 'rgba(0,0,0,0.7)', 3);
+		scoreText.setShadow(1, 1, 'rgba(0,0,0,0.9)', 2);
 
 		// Listen real time highscore on firebase
 		const refHighScore = ref(database, 'highscore')
@@ -159,7 +157,6 @@ export default class MainGame extends Phaser.Scene {
 		keys = this.input.keyboard.addKeys('W,A,S,D,M');
 		
 		muteButton = this.add.sprite(750, 35, this.sound.mute ? 'muteButton' : 'soundButton').setInteractive();
-
 		muteButton.on('pointerdown', this.updateMuteIcon);
 		this.input.keyboard.on('keydown-M', this.updateMuteIcon);
 
@@ -228,16 +225,12 @@ export default class MainGame extends Phaser.Scene {
 	}
 
 	collectItem(player: Phaser.Physics.Arcade.Sprite, item: TItem) {
-		// item.disableBody(true, true);
 		item.destroy();
 		base.sound.play('heal')
 
 		//  Add and update the score
 		MainGame.Score += 10;
 		scoreText.setText(`Puan: ${MainGame.Score} - ${MainGame.HighScore} 🏆`);
-
-		base.scene.pause(MainGame.Name);
-		base.scene.launch(SecretChapter.Name);
 	}
 
 	hitBomb(player: Phaser.Physics.Arcade.Sprite) {
@@ -284,17 +277,6 @@ export default class MainGame extends Phaser.Scene {
 			this.scene.launch(GamePause.Name);
 		} 
 
-		// if (player.body.touching.down && Phaser.Input.Keyboard.JustDown(ctrlKey))
-		// {
-		// 	player.setRotation(Math.PI / 2);
-		// 	player.anims.play('sleep', true);
-		// } 
-		// 
-		// if (Phaser.Input.Keyboard.JustUp(ctrlKey))
-		// {
-		// 	player.setRotation(0);
-		// }
-		
 		if (player.body.velocity.x < 0) {
 			player.flipX = true; // Sola hareket ederken görüntüyü aynala
 		} else if (player.body.velocity.x > 0) {
@@ -332,6 +314,13 @@ export default class MainGame extends Phaser.Scene {
 			const x = player.x < 400
 				? Phaser.Math.Between(400, 800)
 				: Phaser.Math.Between(0, 400);
+
+			level += 1;
+
+			if (level % 5 == 0) {
+				this.scene.pause(MainGame.Name);
+				this.scene.launch(SecretChapter.Name)
+			}
 
 			const bomb = bombs.create(x, 16, "bomb");
 			bomb.setBounce(1);

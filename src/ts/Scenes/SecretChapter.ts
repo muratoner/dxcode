@@ -4,6 +4,7 @@ import GamePause from "./GamePause";
 import MainGame from "./MainGame";
 
 let player: Phaser.Physics.Arcade.Sprite;
+let secretCircle: Phaser.Physics.Arcade.Sprite;
 let cursors: Phaser.Input.Keyboard.Types.CursorKeys;
 let platforms: Phaser.Physics.Arcade.StaticGroup;
 let stars: Phaser.Physics.Arcade.Group;
@@ -11,7 +12,6 @@ let base: SecretChapter;
 let scoreText: Phaser.GameObjects.Text
 let escKey;
 let spaceKey;
-let ctrlKey;
 let keys;
 let muteButton;
 let triggerTimer: Phaser.Time.TimerEvent;
@@ -32,23 +32,20 @@ export default class SecretChapter extends Phaser.Scene {
 	 * Unique name of the scene.
 	 */
 	public static Name = "SecretChapter";
-	public static IsActive = true;
-
-	public preload(): void {
-
-		// player = this.physics.add.sprite(100, 100, 'player');
-		// player.setCollideWorldBounds(true); // Sınırları kaldır
-	}
+	public static IsActive = false;
 
 	public create(): void {
 		base = this
 
+		SecretChapter.IsActive = true
+
 		Utilities.LogSceneMethodEntry("SecretChapter", "create");
+		const character = Utilities.getCharacterName()
 
 		triggerTimerGameEnd = this.time.addEvent({
 			callback: this.timerEventGameEnd,
 			callbackScope: this,
-			delay: 10000,
+			delay: 20000,
 			loop: true
 		});
 
@@ -57,6 +54,11 @@ export default class SecretChapter extends Phaser.Scene {
 		const scaleY = this.cameras.main.height / image.height
 		const scale = Math.max(scaleX, scaleY)
 		image.setScale(scale).setScrollFactor(0)
+
+		secretCircle = this.physics.add.sprite(700, 200, 'secretcircle');
+		secretCircle.setScale(0.5)
+		secretCircle.setVelocity(-100, 0);
+		secretCircle.setCollideWorldBounds(true)
 
 		//  The platforms group contains the ground and the 2 ledges we can jump on
 		platforms = this.physics.add.staticGroup();
@@ -67,7 +69,8 @@ export default class SecretChapter extends Phaser.Scene {
 		platforms.create(700, 400, 'platformdxcode');
 		platforms.create(800, 325, 'platformdxcode');
 
-		player = this.physics.add.sprite(100, 300, 'male');
+		this.physics.add.collider(secretCircle, platforms);
+		player = this.physics.add.sprite(100, 300, character);
 
 		player.setCollideWorldBounds(true);
 		
@@ -75,48 +78,48 @@ export default class SecretChapter extends Phaser.Scene {
 
 		this.anims.create({
 			key: 'left',
-			frames: this.anims.generateFrameNumbers('male', { start: 9, end: 10 }),
+			frames: this.anims.generateFrameNumbers(character, { start: 9, end: 10 }),
 			frameRate: 10,
 			repeat: -1,
 		});
 
 		this.anims.create({
 			key: 'turn',
-			frames: [ { key: 'male', frame: 0 } ],
+			frames: [ { key: character, frame: 0 } ],
 			frameRate: 20
 		});
 
 		this.anims.create({
 			key: 'right',
-			frames: this.anims.generateFrameNumbers('male', { start: 9, end: 10 }),
+			frames: this.anims.generateFrameNumbers(character, { start: 9, end: 10 }),
 			frameRate: 10,
 			repeat: -1
 		});
 
 		this.anims.create({
 			key: 'up',
-			frames: [ { key: 'male', frame: 1 } ] ,
+			frames: [ { key: character, frame: 1 } ] ,
 			frameRate: 20,
 		})
 		this.anims.create({
 			key: 'sleep',
-			frames: [ { key: 'male', frame: 5 } ] ,
+			frames: [ { key: character, frame: 5 } ] ,
 			frameRate: 20,
 		})
 
 		cursors = this.input.keyboard.createCursorKeys();
 
 		this.physics.add.collider(player, platforms);
+		this.physics.add.collider(player, secretCircle, this.timerEventGameEnd, null);
 		
 		scoreText = this.add.text(16, 16, `Puan: ${MainGame.Score} - ${MainGame.HighScore} 🏆`, {
 			fontSize: "32px",
 			fontFamily: 'FontName'
 		});
-		scoreText.setShadow(3, 3, 'rgba(0,0,0,0.7)', 3);
+		scoreText.setShadow(1, 1, 'rgba(0,0,0,0.9)', 2);
 
 		escKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)
 		spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
-		ctrlKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.CTRL)
 		keys = this.input.keyboard.addKeys('W,A,S,D,M');
 		
 		muteButton = this.add.sprite(750, 35, this.sound.mute ? 'muteButton' : 'soundButton').setInteractive();
@@ -140,8 +143,8 @@ export default class SecretChapter extends Phaser.Scene {
 		//  Create our own EventEmitter instance
 		MainGame.EventEmitter.emit('updateScore');
 		SecretChapter.IsActive = false
-		this.scene.resume(MainGame.Name);
-		this.scene.stop(SecretChapter.Name);
+		base.scene.resume(MainGame.Name);
+		base.scene.stop(SecretChapter.Name);
 	}
 
 	public timerEvent(): void {

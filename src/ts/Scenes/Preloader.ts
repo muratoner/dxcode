@@ -7,6 +7,7 @@ export default class Preloader extends Phaser.Scene {
 	 */
 	public static Name = "Preloader";
 
+
 	public preload(): void {
 		this.addProgressBar();
 
@@ -18,10 +19,14 @@ export default class Preloader extends Phaser.Scene {
 		this.load.image('secretbg', 'backgrounds/dxcode-background.jpg');
 		this.load.image('platformdxcode', 'platform-dxcode.png');
 		this.load.image('dxcodelogo', 'dxcode-logo.png');
+		this.load.image('dxcodelogodark', 'dxcode-dark.png');
+		this.load.image('dxcodelogowhite', 'dxcode-white.png');
+		this.load.image('talltrees', 'backgrounds/colored_talltrees.png');
+		this.load.image('secretcircle', 'secret-circle.png');
 
 		this.load.spritesheet('dude', 'characters/dude.png', { frameWidth: 32, frameHeight: 48 });
 		this.load.spritesheet('male', 'characters/male.png', { frameWidth: 80, frameHeight: 110 });
-		// 		this.load.spritesheet('male', this.character.female ? 'characters/female.png' : 'characters/male.png', { frameWidth: 80, frameHeight: 110 }).setInteractive();
+		this.load.spritesheet('female', 'characters/female.png', { frameWidth: 80, frameHeight: 110 });
 
 		this.load.audio('bomb', 'sounds/bomb.wav');
 		this.load.audio('heal', 'sounds/heal.wav');
