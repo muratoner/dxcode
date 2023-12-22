@@ -1,9 +1,5 @@
 # DxCode Project
 
-The following is a starter project to get started with a new game in Phaser 3 and [Visual Studio Code](https://code.visualstudio.com/), using TypeScript and NodeJS.
-
-> If using GitHub, you can use the **Use this template** button to create a new Phaser 3 project from this starter template.
-
 ## Get Started
 
 1. Make sure [Node.js](https://nodejs.org) is installed.
