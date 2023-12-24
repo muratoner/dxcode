@@ -19,6 +19,7 @@ let scoreText: Phaser.GameObjects.Text
 let enterKey;
 let spaceKey;
 let ctrlKey;
+let fKey;
 let keys;
 let muteButton: Phaser.GameObjects.Sprite;
 let level
@@ -163,6 +164,7 @@ export default class MainGame extends Phaser.Scene {
 		enterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER)
 		spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
 		ctrlKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.CTRL)
+		fKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F)
 		keys = this.input.keyboard.addKeys('W,A,S,D,M');
 		
 		muteButton = this.add.sprite(750, 35, this.sound.mute ? 'muteButton' : 'soundButton').setInteractive();
@@ -305,6 +307,17 @@ export default class MainGame extends Phaser.Scene {
 		{
 			this.scene.pause(MainGame.Name);
 			this.scene.launch(GamePause.Name);
+		} 
+
+		if (Phaser.Input.Keyboard.JustDown(fKey))
+		{
+			if (this.scale.isFullscreen) {
+				this.scale.stopFullscreen();
+				// On stop fulll screen
+			} else {
+				this.scale.startFullscreen();
+				// On start fulll screen
+			}
 		} 
 
 		if (player.body.velocity.x < 0) {

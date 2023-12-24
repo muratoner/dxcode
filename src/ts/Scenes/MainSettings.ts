@@ -58,7 +58,7 @@ export default class MainSettings extends Phaser.Scene {
 			.setOrigin(0.5)
 			.setFontFamily("FontName").setFontSize(titleSize).setFill("#1b5397")
 		pauseTitle.setShadow(1, 1, 'rgba(0,0,0,0.9)', 2);
-		const pauseContent = this.add.text(this.cameras.main.centerX, startYPosition + 275, "Oyunu durdurmak veya başlatmak için ESC tuşunu kullanın.");
+		const pauseContent = this.add.text(this.cameras.main.centerX, startYPosition + 275, "Oyunu durdurmak veya başlatmak için ENTER tuşunu kullanın.");
 		pauseContent
 			.setOrigin(0.5)
 			.setFontFamily("FontName").setFontSize(fontSize).setFill("#1b5397")
