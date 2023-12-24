@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import { initializeApp } from 'firebase/app';
+import { Database, getDatabase, onValue, ref, set } from "firebase/database";
+import "firebase/firestore";
+import { Firestore, doc, getDoc, getFirestore, setDoc } from "firebase/firestore";
 import Utilities from "../Utilities";
 import GameOver from "./GameOver";
 import GamePause from "./GamePause";
-import {initializeApp} from 'firebase/app';
-import { Database, getDatabase, onValue, ref, set } from "firebase/database";
 import SecretChapter from "./SecretChapter";
-import "firebase/firestore";
-import { Firestore, doc, getFirestore, setDoc } from "firebase/firestore";
 
 let player: Phaser.Physics.Arcade.Sprite;
 let cursors: Phaser.Input.Keyboard.Types.CursorKeys;
@@ -61,15 +61,20 @@ export default class MainGame extends Phaser.Scene {
 	public static database: Database;
 	public static databaseFireStore: Firestore;
 
+	hearts: Phaser.GameObjects.Sprite[]
+
 	public create(): void {
 		base = this
 
+		Utilities.LogSceneMethodEntry("MainGame", "create");
+		this.input.setDefaultCursor('url(assets/cursor.png), pointer');
+
 		gameOver = false
 		level = 1
+		this.hearts = []
 		MainGame.Score = 0
 		MainGame.HighScore = 0
 
-		Utilities.LogSceneMethodEntry("MainGame", "create");
 		let character = Utilities.getCharacterName()
 
 		const image = this.add.sprite(this.cameras.main.width / 2, this.cameras.main.height / 2, 'talltrees')
@@ -85,7 +90,7 @@ export default class MainGame extends Phaser.Scene {
 		//  Scale it to fit the width of the game (the original sprite is 400x32 in size)
 		platforms.create(200, 585, 'ground').setScale(1).refreshBody();
 		platforms.create(600, 585, 'ground').setScale(1).refreshBody();
-	
+
 		//  Now let's create some ledges
 		platforms.create(600, 410, 'ground');
 		platforms.create(50, 250, 'ground');
@@ -169,6 +174,10 @@ export default class MainGame extends Phaser.Scene {
 
 		//  Set-up an event handler
 		MainGame.EventEmitter.on('updateScore', this.handler, this);
+
+		for (let i = 0; i < 3; i++) {
+			this.hearts.push(this.add.sprite(this.cameras.main.width - 20 - (i * 40), this.cameras.main.height - 20, 'heart'))
+		}
 	}
 
 	handler() {
@@ -237,16 +246,32 @@ export default class MainGame extends Phaser.Scene {
 		scoreText.setText(`Puan: ${MainGame.Score} - ${MainGame.HighScore} 🏆`);
 	}
 
-	async hitBomb(player: Phaser.Physics.Arcade.Sprite) {
-		base.physics.pause();
-		player.setTint(0xff0000);
-		player.anims.play("turn");
-		gameOver = true;
+	hitBomb(player: Phaser.Physics.Arcade.Sprite, bomb: TItem) {
+		const heart = base.hearts.pop()
+		bomb.destroy()
 
-		if (MainGame.HighScore <= 0 || MainGame.HighScore < MainGame.Score) {
-			MainGame.HighScore = MainGame.Score
-			set(ref(MainGame.database, 'highscore'), {score: MainGame.Score});
-			await setDoc(doc(MainGame.databaseFireStore, "highscores", localStorage.getItem('playerName')), {score: MainGame.Score});
+		if(base.hearts.length == 0) {
+			base.physics.pause();
+			player.setTint(0xff0000);
+			player.anims.play("turn");
+			gameOver = true;
+			
+			base.sound.play('bomb');
+
+			if (MainGame.HighScore <= 0 || MainGame.HighScore < MainGame.Score) {
+				MainGame.HighScore = MainGame.Score
+				set(ref(MainGame.database, 'highscore'), {score: MainGame.Score});
+			}
+	
+			getDoc(doc(MainGame.databaseFireStore, "highscores", localStorage.getItem('playerName'))).then(async res => {
+				const data = res.data()
+				if (MainGame.Score > (data?.score || 0)) {
+					await setDoc(doc(MainGame.databaseFireStore, "highscores", localStorage.getItem('playerName')), {score: MainGame.Score});
+				}
+			})
+		} else {
+			base.sound.play('loseheart');
+			heart.destroy(true)
 		}
 	}
 
@@ -264,12 +289,16 @@ export default class MainGame extends Phaser.Scene {
 		}
 	}
 
+	static pauseGame(){
+		base.scene.pause(MainGame.Name);
+		base.scene.launch(GamePause.Name);
+	}
+
 	public update() {
 
 		player.setScale(0.5, 0.5);
 
 		if (gameOver) {
-			this.sound.play('bomb');
 			this.time.delayedCall(200, function() {
 				this.scene.pause(MainGame.Name);
 				this.scene.launch(GameOver.Name)

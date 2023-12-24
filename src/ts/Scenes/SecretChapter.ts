@@ -36,6 +36,7 @@ export default class SecretChapter extends Phaser.Scene {
 
 	public create(): void {
 		base = this
+		this.input.setDefaultCursor('url(assets/cursor.png), pointer');
 
 		SecretChapter.IsActive = true
 
@@ -143,7 +144,7 @@ export default class SecretChapter extends Phaser.Scene {
 		//  Create our own EventEmitter instance
 		MainGame.EventEmitter.emit('updateScore');
 		SecretChapter.IsActive = false
-		base.scene.resume(MainGame.Name);
+		MainGame.pauseGame()
 		base.scene.stop(SecretChapter.Name);
 	}
 

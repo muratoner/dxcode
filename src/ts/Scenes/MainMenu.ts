@@ -1,7 +1,7 @@
+import InputText from 'phaser3-rex-plugins/plugins/inputtext.js';
 import Utilities from "../Utilities";
 import MainGame from "./MainGame";
 import MainSettings from "./MainSettings";
-import InputText from 'phaser3-rex-plugins/plugins/inputtext.js';
 
 let characterImage: Phaser.GameObjects.Image
 let enterKey;
@@ -16,6 +16,7 @@ export default class MainMenu extends Phaser.Scene {
 
 	public create(): void {
 		Utilities.LogSceneMethodEntry("MainMenu", "create");
+		this.input.setDefaultCursor('url(assets/cursor.png), pointer');
 
 		// Kullanıcıdan ismi al
 		let playerName = localStorage.getItem('playerName')
@@ -51,12 +52,11 @@ export default class MainMenu extends Phaser.Scene {
 				}
 			}, this);
 
-		const playerNameText = this.add.text(this.cameras.main.width - 50, 10, playerName)
+		const playerNameText = this.add.text(this.cameras.main.width - 75, 10, playerName.slice(0, 20))
 			.setInteractive()
 			.setFontFamily("FontName")
 			.setFontSize(15)
 			.setFill("#1b5397")
-			.setAlign("center")
 			.setOrigin(0.5)
 			.on('pointerdown', function () {
 				playerName = prompt('Skor tablosunda kullanılacak isminizi girin:', playerName);
@@ -64,7 +64,7 @@ export default class MainMenu extends Phaser.Scene {
 					playerName = 'Gizli Kahraman'
 				}
 				localStorage.setItem('playerName', playerName)
-				playerNameText.setText(playerName)
+				playerNameText.setText(playerName.slice(0, 20))
 			}, this);
 			
 		const textYPosition = this.cameras.main.height / 3;

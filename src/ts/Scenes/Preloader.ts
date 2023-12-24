@@ -10,10 +10,10 @@ export default class Preloader extends Phaser.Scene {
 
 	public preload(): void {
 		this.addProgressBar();
+		this.input.setDefaultCursor('url(assets/cursor.png), pointer');
 
 		this.load.path = "assets/";
 		this.load.image("phaser_pixel_medium_flat");
-		this.load.image("Phaser-Logo-Small");
 		this.load.image("logo-256");
 		this.load.image('arkaplan', 'backgrounds/game_background_3/game_background_3.png');
 		this.load.image('secretbg', 'backgrounds/dxcode-background.jpg');
@@ -23,19 +23,19 @@ export default class Preloader extends Phaser.Scene {
 		this.load.image('dxcodelogowhite', 'dxcode-white.png');
 		this.load.image('talltrees', 'backgrounds/colored_talltrees.png');
 		this.load.image('secretcircle', 'secret-circle.png');
-
+		this.load.image('heart', 'heart.png');
+		this.load.image('soundButton', 'sound.png');
+		this.load.image('muteButton', 'mute.png');
+		this.load.image('ground', 'platform.png');
+		this.load.image('star', 'star.png');
+		this.load.image('bomb', 'bomb.png');
 		this.load.spritesheet('dude', 'characters/dude.png', { frameWidth: 32, frameHeight: 48 });
 		this.load.spritesheet('male', 'characters/male.png', { frameWidth: 80, frameHeight: 110 });
 		this.load.spritesheet('female', 'characters/female.png', { frameWidth: 80, frameHeight: 110 });
 
 		this.load.audio('bomb', 'sounds/bomb.wav');
 		this.load.audio('heal', 'sounds/heal.wav');
-		this.load.image('soundButton', 'sound.png');
-		this.load.image('muteButton', 'mute.png');
-
-		this.load.image('ground', 'platform.png');
-		this.load.image('star', 'star.png');
-		this.load.image('bomb', 'bomb.png');
+		this.load.audio('loseheart', 'sounds/lose-heart.wav');
 	}
 
 	public create(): void {

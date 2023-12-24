@@ -15,6 +15,7 @@ export default class SplashScreen extends Phaser.Scene {
 
 	public create(): void {
 		Utilities.LogSceneMethodEntry("SplashScreen", "create");
+		this.input.setDefaultCursor('url(assets/cursor.png), pointer');
 
 		const image = this.add.image(230, this.cameras.main.centerY * 0.5, 'logo-256')
 		image.setScale(.7, .7)
