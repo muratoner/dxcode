@@ -1,29 +1,72 @@
 import Utilities from "../Utilities";
 import MainGame from "./MainGame";
 import MainSettings from "./MainSettings";
+import InputText from 'phaser3-rex-plugins/plugins/inputtext.js';
 
 let characterImage: Phaser.GameObjects.Image
 let enterKey;
 
 export default class MainMenu extends Phaser.Scene {
+	inputText: InputText
+
 	/**
 	 * Unique name of the scene.
 	 */
 	public static Name = "MainMenu";
 
-	public preload(): void {
-		// Preload as needed.
-	}
-
 	public create(): void {
 		Utilities.LogSceneMethodEntry("MainMenu", "create");
+
+		// Kullanıcıdan ismi al
+		let playerName = localStorage.getItem('playerName')
+		if (!playerName?.trim()) {
+			playerName = prompt('Skor tablosunda kullanılacak isminizi girin:');
+			if (!playerName?.trim()) {
+				playerName = "Gizli Kahraman"
+			}
+			localStorage.setItem('playerName', playerName)
+		}
 
 		const image = this.add.image(this.cameras.main.width / 2, this.cameras.main.height / 2, 'talltrees')
 		const scaleX = this.cameras.main.width / image.width
 		const scaleY = this.cameras.main.height / image.height
 		const scale = Math.max(scaleX, scaleY)
 		image.setScale(scale).setScrollFactor(0)
+		
+		this.add.text(50, 10, 'Tam Ekran')
+			.setInteractive()
+			.setFontFamily("FontName")
+			.setFontSize(15)
+			.setFill("#1b5397")
+			.setAlign("center")
+			.setOrigin(0.5)
 
+			.on('pointerdown', function () {
+				if (this.scale.isFullscreen) {
+					this.scale.stopFullscreen();
+					// On stop fulll screen
+				} else {
+					this.scale.startFullscreen();
+					// On start fulll screen
+				}
+			}, this);
+
+		const playerNameText = this.add.text(this.cameras.main.width - 50, 10, playerName)
+			.setInteractive()
+			.setFontFamily("FontName")
+			.setFontSize(15)
+			.setFill("#1b5397")
+			.setAlign("center")
+			.setOrigin(0.5)
+			.on('pointerdown', function () {
+				playerName = prompt('Skor tablosunda kullanılacak isminizi girin:', playerName);
+				if (!playerName?.trim()) {
+					playerName = 'Gizli Kahraman'
+				}
+				localStorage.setItem('playerName', playerName)
+				playerNameText.setText(playerName)
+			}, this);
+			
 		const textYPosition = this.cameras.main.height / 3;
 		
 		const helloMessage = this.add.text(this.cameras.main.centerX, this.cameras.main.height - 100, "\"Doğamıza sahip çıkarak, dünyayı temiz tutalım,\nçünkü temiz bir dünya, sağlıklı bir geleceğin temelidir.\"");

@@ -5,6 +5,8 @@ import GamePause from "./GamePause";
 import {initializeApp} from 'firebase/app';
 import { Database, getDatabase, onValue, ref, set } from "firebase/database";
 import SecretChapter from "./SecretChapter";
+import "firebase/firestore";
+import { Firestore, doc, getFirestore, setDoc } from "firebase/firestore";
 
 let player: Phaser.Physics.Arcade.Sprite;
 let cursors: Phaser.Input.Keyboard.Types.CursorKeys;
@@ -18,7 +20,6 @@ let escKey;
 let spaceKey;
 let ctrlKey;
 let keys;
-let database: Database;
 let muteButton: Phaser.GameObjects.Sprite;
 let level
 
@@ -46,7 +47,8 @@ export default class MainGame extends Phaser.Scene {
 		
 		const app = initializeApp(firebaseConfig);
 		// Initialize Cloud Storage and get a reference to the service
-		database = getDatabase();
+		MainGame.databaseFireStore = getFirestore(app);
+		MainGame.database = getDatabase();
 	}
 
 	/**
@@ -56,6 +58,8 @@ export default class MainGame extends Phaser.Scene {
 	public static Score = 0;
 	public static HighScore = 0;
 	public static EventEmitter: Phaser.Events.EventEmitter;
+	public static database: Database;
+	public static databaseFireStore: Firestore;
 
 	public create(): void {
 		base = this
@@ -144,7 +148,7 @@ export default class MainGame extends Phaser.Scene {
 		scoreText.setShadow(1, 1, 'rgba(0,0,0,0.9)', 2);
 
 		// Listen real time highscore on firebase
-		const refHighScore = ref(database, 'highscore')
+		const refHighScore = ref(MainGame.database, 'highscore')
 		onValue(refHighScore, (snapshot) => {
 			const res = snapshot.val();
 			MainGame.HighScore = +(res?.score || 0)
@@ -233,7 +237,7 @@ export default class MainGame extends Phaser.Scene {
 		scoreText.setText(`Puan: ${MainGame.Score} - ${MainGame.HighScore} 🏆`);
 	}
 
-	hitBomb(player: Phaser.Physics.Arcade.Sprite) {
+	async hitBomb(player: Phaser.Physics.Arcade.Sprite) {
 		base.physics.pause();
 		player.setTint(0xff0000);
 		player.anims.play("turn");
@@ -241,7 +245,8 @@ export default class MainGame extends Phaser.Scene {
 
 		if (MainGame.HighScore <= 0 || MainGame.HighScore < MainGame.Score) {
 			MainGame.HighScore = MainGame.Score
-			set(ref(database, 'highscore'), {score: MainGame.Score});
+			set(ref(MainGame.database, 'highscore'), {score: MainGame.Score});
+			await setDoc(doc(MainGame.databaseFireStore, "highscores", localStorage.getItem('playerName')), {score: MainGame.Score});
 		}
 	}
 
