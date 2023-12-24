@@ -16,7 +16,7 @@ let bombs: Phaser.Physics.Arcade.Group;
 let base: MainGame;
 let gameOver = false;
 let scoreText: Phaser.GameObjects.Text
-let escKey;
+let enterKey;
 let spaceKey;
 let ctrlKey;
 let keys;
@@ -160,7 +160,7 @@ export default class MainGame extends Phaser.Scene {
 			scoreText.setText(`Puan: ${MainGame.Score} - ${MainGame.HighScore} 🏆`);
 		});
 
-		escKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)
+		enterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER)
 		spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
 		ctrlKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.CTRL)
 		keys = this.input.keyboard.addKeys('W,A,S,D,M');
@@ -269,6 +269,9 @@ export default class MainGame extends Phaser.Scene {
 					await setDoc(doc(MainGame.databaseFireStore, "highscores", localStorage.getItem('playerName')), {score: MainGame.Score});
 				}
 			})
+
+			base.scene.pause(MainGame.Name);
+			base.scene.launch(GameOver.Name)
 		} else {
 			base.sound.play('loseheart');
 			heart.destroy(true)
@@ -298,14 +301,7 @@ export default class MainGame extends Phaser.Scene {
 
 		player.setScale(0.5, 0.5);
 
-		if (gameOver) {
-			this.time.delayedCall(200, function() {
-				this.scene.pause(MainGame.Name);
-				this.scene.launch(GameOver.Name)
-			}, [], this);
-		}
-
-		if (Phaser.Input.Keyboard.JustDown(escKey))
+		if (Phaser.Input.Keyboard.JustDown(enterKey))
 		{
 			this.scene.pause(MainGame.Name);
 			this.scene.launch(GamePause.Name);

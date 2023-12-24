@@ -1,7 +1,7 @@
 import Utilities from "../Utilities";
 import MainGame from "./MainGame";
 import SecretChapter from "./SecretChapter";
-let escKey;
+let enterKey;
 
 export default class GamePause extends Phaser.Scene {
 	public static Name = "GamePause";
@@ -19,7 +19,7 @@ export default class GamePause extends Phaser.Scene {
 		gamePauseText.setOrigin(0.5);
 		gamePauseText.setShadow(1, 1, 'rgba(0,0,0,0.9)', 2);
 
-		const gamePauseDescText = this.add.text(this.cameras.main.width / 2, this.cameras.main.height / 2 + 40, 'Oyuna devam etmek için Esc\'ye basın.', {
+		const gamePauseDescText = this.add.text(this.cameras.main.width / 2, this.cameras.main.height / 2 + 40, 'Oyuna devam etmek için Enter\'a basın.', {
 			fontFamily: 'FontName',
 			fontSize: '20px',
 			color: '#1b5397',
@@ -37,18 +37,18 @@ export default class GamePause extends Phaser.Scene {
 		gamePauseDesc.setOrigin(0.5);
 		gamePauseDesc.setShadow(1, 1, 'rgba(0,0,0,0.9)', 2);
 
-		escKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)
+		enterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER)
 	}
 
 	public update() {
 		if (SecretChapter.IsActive) {
-			if (Phaser.Input.Keyboard.JustDown(escKey)) {
+			if (Phaser.Input.Keyboard.JustDown(enterKey)) {
 				SecretChapter.IsActive = false
 				this.scene.resume(SecretChapter.Name);
 				this.scene.stop(GamePause.Name);
 			}
 		} else {
-			if (Phaser.Input.Keyboard.JustDown(escKey)) {
+			if (Phaser.Input.Keyboard.JustDown(enterKey)) {
 				this.scene.resume(MainGame.Name);
 				this.scene.stop(GamePause.Name);
 			}
