@@ -14,7 +14,7 @@ export default class Boot extends Phaser.Scene {
 	public create(): void {
 		Utilities.LogSceneMethodEntry("Boot", "create");
 
-		this.input.setDefaultCursor('url(assets/cursor.png), pointer');
+		this.input.createDefaultCursor();
 
 		this.scene.start(Preloader.Name);
 	}
