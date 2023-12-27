@@ -16,8 +16,8 @@ export default class MainMenu extends Phaser.Scene {
 
 	public create(): void {
 		Utilities.LogSceneMethodEntry("MainMenu", "create");
-		this.input.setDefaultCursor('url(assets/cursor.png), pointer');
-
+		this.input.createDefaultCursor();
+		
 		// Kullanıcıdan ismi al
 		let playerName = localStorage.getItem('playerName')
 		if (!playerName?.trim()) {

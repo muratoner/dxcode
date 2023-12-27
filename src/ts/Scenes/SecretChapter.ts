@@ -5,7 +5,7 @@ import MainGame from "./MainGame";
 
 let player: Phaser.Physics.Arcade.Sprite;
 let secretCircle: Phaser.Physics.Arcade.Sprite;
-let cursors: Phaser.Input.Keyboard.Types.CursorKeys;
+let cursors: Phaser.Types.Input.Keyboard.CursorKeys;
 let platforms: Phaser.Physics.Arcade.StaticGroup;
 let stars: Phaser.Physics.Arcade.Group;
 let base: SecretChapter;
@@ -36,8 +36,8 @@ export default class SecretChapter extends Phaser.Scene {
 
 	public create(): void {
 		base = this
-		this.input.setDefaultCursor('url(assets/cursor.png), pointer');
-
+		this.input.createDefaultCursor();
+		
 		SecretChapter.IsActive = true
 
 		Utilities.LogSceneMethodEntry("SecretChapter", "create");

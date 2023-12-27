@@ -1,4 +1,5 @@
 import Utilities from "../Utilities";
+import { ImageKey } from "../Utilities/Keys";
 import SplashScreen from "./SplashScreen";
 
 export default class Preloader extends Phaser.Scene {
@@ -10,7 +11,7 @@ export default class Preloader extends Phaser.Scene {
 
 	public preload(): void {
 		this.addProgressBar();
-		this.input.setDefaultCursor('url(assets/cursor.png), pointer');
+		this.input.createDefaultCursor();
 
 		this.load.path = "assets/";
 		this.load.image("phaser_pixel_medium_flat");
@@ -27,8 +28,9 @@ export default class Preloader extends Phaser.Scene {
 		this.load.image('soundButton', 'sound.png');
 		this.load.image('muteButton', 'mute.png');
 		this.load.image('ground', 'platform.png');
-		this.load.image('star', 'star.png');
-		this.load.image('bomb', 'bomb.png');
+		this.load.image(ImageKey.barrel, 'barrel.png');
+		this.load.image(ImageKey.barrelDanger, 'barrel-danger.png');
+		this.load.image(ImageKey.bomb, 'bomb.png');
 		this.load.spritesheet('dude', 'characters/dude.png', { frameWidth: 32, frameHeight: 48 });
 		this.load.spritesheet('male', 'characters/male.png', { frameWidth: 80, frameHeight: 110 });
 		this.load.spritesheet('female', 'characters/female.png', { frameWidth: 80, frameHeight: 110 });
@@ -42,10 +44,6 @@ export default class Preloader extends Phaser.Scene {
 		Utilities.LogSceneMethodEntry("Preloader", "create");
 
 		this.scene.start(SplashScreen.Name);
-	}
-
-	public update(): void {
-		// preload handles updates to the progress bar, so nothing should be needed here.
 	}
 
 	/**

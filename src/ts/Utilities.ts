@@ -27,4 +27,6 @@ export default class Utilities {
 	public static getCharacterName() {
 		return localStorage.getItem('characterSkin') || 'male'
 	}
+
+	
 }

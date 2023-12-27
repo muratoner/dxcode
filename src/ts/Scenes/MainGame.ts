@@ -1,43 +1,28 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-import { initializeApp } from 'firebase/app';
-import { Database, getDatabase, onValue, ref, set } from "firebase/database";
+import { onValue, ref } from "firebase/database";
 import "firebase/firestore";
-import { Firestore, doc, getDoc, getFirestore, setDoc } from "firebase/firestore";
 import Utilities from "../Utilities";
 import GameOver from "./GameOver";
 import GamePause from "./GamePause";
 import SecretChapter from "./SecretChapter";
+import Firebase from "../Utilities/Firebase";
+import { ImageKey, SoundKeys } from "../Utilities/Keys";
 
 let player: Phaser.Physics.Arcade.Sprite;
-let cursors: Phaser.Input.Keyboard.Types.CursorKeys;
+let cursors: Phaser.Types.Input.Keyboard.CursorKeys;
 let platforms: Phaser.Physics.Arcade.StaticGroup;
-let stars: Phaser.Physics.Arcade.Group;
+let barrels: Phaser.Physics.Arcade.Group;
 let bombs: Phaser.Physics.Arcade.Group;
 let base: MainGame;
 let gameOver = false;
 let scoreText: Phaser.GameObjects.Text
-let enterKey;
 let spaceKey;
-let ctrlKey;
 let fKey;
 let keys;
 let muteButton: Phaser.GameObjects.Sprite;
 let level
 
 type TItem = Phaser.Tilemaps.Tile
-const starPositions: number[] = []
-
-// Add your firebase configs here
-const firebaseConfig = {
-	apiKey: "AIzaSyAvT41yWX0XcrLQGSzDpBqNMdUUDb_vXA8",
-	authDomain: "ctrlzzz-9bbf5.firebaseapp.com",
-	databaseURL: "https://ctrlzzz-9bbf5-default-rtdb.europe-west1.firebasedatabase.app",
-	projectId: "ctrlzzz-9bbf5",
-	storageBucket: "ctrlzzz-9bbf5.appspot.com",
-	messagingSenderId: "419914893697",
-	appId: "1:419914893697:web:71d3e7add245bfc7a7c080",
-	measurementId: "G-Y3E566MD8Q"
-};
+const barrelPosition: number[] = []
 
 export default class MainGame extends Phaser.Scene {
 	/**
@@ -45,11 +30,6 @@ export default class MainGame extends Phaser.Scene {
 	 */
 	constructor() {
 		super({key: MainGame.Name});
-		
-		const app = initializeApp(firebaseConfig);
-		// Initialize Cloud Storage and get a reference to the service
-		MainGame.databaseFireStore = getFirestore(app);
-		MainGame.database = getDatabase();
 	}
 
 	/**
@@ -59,16 +39,15 @@ export default class MainGame extends Phaser.Scene {
 	public static Score = 0;
 	public static HighScore = 0;
 	public static EventEmitter: Phaser.Events.EventEmitter;
-	public static database: Database;
-	public static databaseFireStore: Firestore;
-
 	hearts: Phaser.GameObjects.Sprite[]
+	camera: Phaser.Cameras.Scene2D.Camera
 
 	public create(): void {
+		Utilities.LogSceneMethodEntry("MainGame", "create");
+
 		base = this
 
-		Utilities.LogSceneMethodEntry("MainGame", "create");
-		this.input.setDefaultCursor('url(assets/cursor.png), pointer');
+		this.input.createDefaultCursor()
 
 		gameOver = false
 		level = 1
@@ -76,40 +55,28 @@ export default class MainGame extends Phaser.Scene {
 		MainGame.Score = 0
 		MainGame.HighScore = 0
 
-		let character = Utilities.getCharacterName()
+		const character = Utilities.getCharacterName()
+		this.camera = this.cameras.main
 
-		const image = this.add.sprite(this.cameras.main.width / 2, this.cameras.main.height / 2, 'talltrees')
-		const scaleX = this.cameras.main.width / image.width
-		const scaleY = this.cameras.main.height / image.height
+		const image = this.add.sprite(this.camera.width / 2, this.camera.height / 2, 'talltrees')
+		const scaleX = this.camera.width / image.width
+		const scaleY = this.camera.height / image.height
 		const scale = Math.max(scaleX, scaleY)
 		image.setScale(scale).setScrollFactor(0)
 
-		//  The platforms group contains the ground and the 2 ledges we can jump on
-		platforms = this.physics.add.staticGroup();
-
-		//  Here we create the ground.
-		//  Scale it to fit the width of the game (the original sprite is 400x32 in size)
-		platforms.create(200, 585, 'ground').setScale(1).refreshBody();
-		platforms.create(600, 585, 'ground').setScale(1).refreshBody();
-
-		//  Now let's create some ledges
-		platforms.create(600, 410, 'ground');
-		platforms.create(50, 250, 'ground');
-		platforms.create(750, 230, 'ground');
-
-		player = this.physics.add.sprite(100, 300, character);
-
+		player = this.physics.add.sprite(100, this.camera.height - 200, character);
 		player.setCollideWorldBounds(true);
 
 		bombs = this.physics.add.group();
-		
-		base.createStars()
+
+		this.createPlatforms()
+		this.createStars()
 
 		for (let i = 0; i < 1; i++) {
-			const bomb = bombs.create(24, 24, "bomb");
+			const bomb = bombs.create(24, 24, ImageKey.bomb);
 			bomb.setBounce(1);
 			bomb.setCollideWorldBounds(true);
-			bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+			bomb.setVelocity(Phaser.Math.Between(-200, 300), 20);
 			bomb.allowGravity = false;
 		}
 
@@ -141,10 +108,8 @@ export default class MainGame extends Phaser.Scene {
 
 		cursors = this.input.keyboard.createCursorKeys();
 
-		this.physics.add.collider(player, platforms);
-		
+		this.physics.add.collider(player, platforms);		
 		this.physics.add.collider(bombs, platforms);
-
 		this.physics.add.collider(player, bombs, this.hitBomb, null);
 
 		scoreText = this.add.text(16, 16, `Puan: 0 - ${MainGame.HighScore} 🏆`, {
@@ -154,22 +119,36 @@ export default class MainGame extends Phaser.Scene {
 		scoreText.setShadow(1, 1, 'rgba(0,0,0,0.9)', 2);
 
 		// Listen real time highscore on firebase
-		const refHighScore = ref(MainGame.database, 'highscore')
+		const refHighScore = ref(Firebase.database, 'highscore')
 		onValue(refHighScore, (snapshot) => {
 			const res = snapshot.val();
 			MainGame.HighScore = +(res?.score || 0)
 			scoreText.setText(`Puan: ${MainGame.Score} - ${MainGame.HighScore} 🏆`);
 		});
 
-		enterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER)
-		spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
-		ctrlKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.CTRL)
-		fKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F)
-		keys = this.input.keyboard.addKeys('W,A,S,D,M');
+		const keyboard = this.input.keyboard
+
+		spaceKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
+		keys = keyboard.addKeys('W,A,S,D,M');
+
+		keyboard.on('keydown-ENTER', () => {
+			this.scene.pause(MainGame.Name);
+			this.scene.launch(GamePause.Name);
+		})
+
+		keyboard.on('keydown-F', () => {
+			if (this.scale.isFullscreen) {
+				this.scale.stopFullscreen();
+				// On stop fulll screen
+			} else {
+				this.scale.startFullscreen();
+				// On start fulll screen
+			}
+		})
 		
-		muteButton = this.add.sprite(750, 35, this.sound.mute ? 'muteButton' : 'soundButton').setInteractive();
+		muteButton = this.add.sprite(this.camera.width - 50, 35, this.sound.mute ? ImageKey.muteButton : ImageKey.soundButton).setInteractive();
 		muteButton.on('pointerdown', this.updateMuteIcon);
-		this.input.keyboard.on('keydown-M', this.updateMuteIcon);
+		keyboard.on('keydown-M', this.updateMuteIcon);
 
 		//  Create our own EventEmitter instance
 		MainGame.EventEmitter = new Phaser.Events.EventEmitter();
@@ -178,147 +157,13 @@ export default class MainGame extends Phaser.Scene {
 		MainGame.EventEmitter.on('updateScore', this.handler, this);
 
 		for (let i = 0; i < 3; i++) {
-			this.hearts.push(this.add.sprite(this.cameras.main.width - 20 - (i * 40), this.cameras.main.height - 20, 'heart'))
+			this.hearts.push(this.add.sprite(this.camera.width - 20 - (i * 40), this.camera.height - 20, 'heart'))
 		}
-	}
-
-	handler() {
-		scoreText.setText(`Puan: ${MainGame.Score} - ${MainGame.HighScore} 🏆`);
-	}
-
-	updateMuteIcon() {
-		// Ses durumuna göre iconu değiştirin
-		if (base.sound.mute) {
-			base.sound.mute = false
-			muteButton.setTexture('soundButton');
-		} else {
-			base.sound.mute = true
-			muteButton.setTexture('muteButton');
-		}
-	}
-
-	createStars() {
-		starPositions.length = 0;
-
-		stars = this.physics.add.group();
-		const length = 5 + bombs.getLength();
-		const spaceSize = this.cameras.main.width / length * 0.5
-		for (let i = 0; i < length; i++) {
-			let newPosition;
-			let isOverlapping;
-		
-			do {
-				isOverlapping = false;
-				newPosition = Utilities.getRandomInt(this.cameras.main.width);
-		
-				// Yeni konumu mevcut yıldızların konumlarıyla karşılaştır
-				for (let j = 0; j < starPositions.length; j++) {
-					if (Math.abs(newPosition - starPositions[j]) < spaceSize) {
-						isOverlapping = true;
-						break; // Yeterince uzaklıkta değil, yeni bir konum seç
-					}
-				}
-			} while (isOverlapping);
-		
-			// Yeterince uzaklıkta bir konum bulundu, yeni konumu ekle
-			starPositions.push(newPosition);
-
-			const star = stars.create(newPosition, 50, 'star')
-			star.body.drag.set(150)
-			star.setCollideWorldBounds(true);
-		}
-
-		// @ts-ignore:next-line
-		stars.children.iterate((child) => {
-			//  Give each star a slightly different bounce
-			// @ts-ignore:next-line
-			child.setBounceY(Phaser.Math.FloatBetween(0.2, 0.5));
-		});
-		this.physics.add.collider(stars, platforms);
-		this.physics.add.overlap(player, stars, this.collectItem, null);
-		this.physics.add.collider(bombs, stars, this.hitStar, null);
-	}
-
-	collectItem(player: Phaser.Physics.Arcade.Sprite, item: TItem) {
-		item.destroy();
-		base.sound.play('heal')
-
-		//  Add and update the score
-		MainGame.Score += 10;
-		scoreText.setText(`Puan: ${MainGame.Score} - ${MainGame.HighScore} 🏆`);
-	}
-
-	hitBomb(player: Phaser.Physics.Arcade.Sprite, bomb: TItem) {
-		const heart = base.hearts.pop()
-		bomb.destroy()
-
-		if(base.hearts.length == 0) {
-			base.physics.pause();
-			player.setTint(0xff0000);
-			player.anims.play("turn");
-			gameOver = true;
-			
-			base.sound.play('bomb');
-
-			if (MainGame.HighScore <= 0 || MainGame.HighScore < MainGame.Score) {
-				MainGame.HighScore = MainGame.Score
-				set(ref(MainGame.database, 'highscore'), {score: MainGame.Score});
-			}
-	
-			getDoc(doc(MainGame.databaseFireStore, "highscores", localStorage.getItem('playerName'))).then(async res => {
-				const data = res.data()
-				if (MainGame.Score > (data?.score || 0)) {
-					await setDoc(doc(MainGame.databaseFireStore, "highscores", localStorage.getItem('playerName')), {score: MainGame.Score});
-				}
-			})
-
-			base.scene.pause(MainGame.Name);
-			base.scene.launch(GameOver.Name)
-		} else {
-			base.sound.play('loseheart');
-			heart.destroy(true)
-		}
-	}
-
-	hitStar(bomb: Phaser.Physics.Arcade.Sprite, star: TItem) {
-		// @ts-ignore:next-line
-		let count = star.customData?.hitBombCount || 0
-		count++;
-		if (count >= 2) {
-			star.destroy();
-		} else {
-			// @ts-ignore:next-line
-			star.customData = {
-				hitBombCount: count
-			}
-		}
-	}
-
-	static pauseGame(){
-		base.scene.pause(MainGame.Name);
-		base.scene.launch(GamePause.Name);
 	}
 
 	public update() {
 
 		player.setScale(0.5, 0.5);
-
-		if (Phaser.Input.Keyboard.JustDown(enterKey))
-		{
-			this.scene.pause(MainGame.Name);
-			this.scene.launch(GamePause.Name);
-		} 
-
-		if (Phaser.Input.Keyboard.JustDown(fKey))
-		{
-			if (this.scale.isFullscreen) {
-				this.scale.stopFullscreen();
-				// On stop fulll screen
-			} else {
-				this.scale.startFullscreen();
-				// On start fulll screen
-			}
-		} 
 
 		if (player.body.velocity.x < 0) {
 			player.flipX = true; // Sola hareket ederken görüntüyü aynala
@@ -333,7 +178,6 @@ export default class MainGame extends Phaser.Scene {
 		else if (cursors.right.isDown || keys.D.isDown)
 		{
 			player.setVelocityX(160);
-
 			player.anims.play('right', true);
 		}
 		else
@@ -351,7 +195,7 @@ export default class MainGame extends Phaser.Scene {
 		}
 
 		// Level
-		if (stars.countActive(true) === 0) {
+		if (barrels.countActive(true) === 0) {
 			//  A new batch of stars to collect
 			base.createStars()
 			const x = player.x < 400
@@ -371,5 +215,149 @@ export default class MainGame extends Phaser.Scene {
 			bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
 			bomb.allowGravity = false;
 		}
+	}
+
+	createPlatforms () {
+		//  The platforms group contains the ground and the 2 ledges we can jump on
+		platforms = this.physics.add.staticGroup();
+
+		function createPlatform(x: number, y: number, scale = 1.7) {
+			platforms.create(x, y, 'ground').setScale(scale).refreshBody();
+		}
+
+		//  Here we create the ground.
+		//  Scale it to fit the width of the game (the original sprite is 400x32 in size)
+		createPlatform(340, this.camera.height - 20);
+		createPlatform(950, this.camera.height - 20);
+
+		//  Now let's create some ledges
+		createPlatform(this.camera.width - 300, 525);
+		createPlatform(100, 350);
+		createPlatform(-100, 175);
+		createPlatform(this.camera.width / 2, this.camera.height / 2 - 150, .8);
+		createPlatform(this.camera.width, 350);
+		createPlatform(this.camera.width + 100, 175);
+	}
+
+	handler() {
+		scoreText.setText(`Puan: ${MainGame.Score} - ${MainGame.HighScore} 🏆`);
+	}
+
+	updateMuteIcon() {
+		// Ses durumuna göre iconu değiştirin
+		if (base.sound.mute) {
+			base.sound.setMute(false)
+			muteButton.setTexture(ImageKey.soundButton);
+		} else {
+			base.sound.setMute(true)
+			muteButton.setTexture(ImageKey.muteButton);
+		}
+	}
+
+	createStars() {
+		barrelPosition.length = 0;
+
+		const physics = this.physics
+
+		barrels = physics.add.group();
+		const length = 5 + bombs.getLength();
+		const spaceSize = this.camera.width / length * 0.5
+		for (let i = 0; i < length; i++) {
+			let newPosition;
+			let isOverlapping;
+		
+			do {
+				isOverlapping = false;
+				newPosition = Utilities.getRandomInt(this.camera.width);
+		
+				// Yeni konumu mevcut yıldızların konumlarıyla karşılaştır
+				for (let j = 0; j < barrelPosition.length; j++) {
+					if (Math.abs(newPosition - barrelPosition[j]) < spaceSize) {
+						isOverlapping = true;
+						break; // Yeterince uzaklıkta değil, yeni bir konum seç
+					}
+				}
+			} while (isOverlapping);
+		
+			// Yeterince uzaklıkta bir konum bulundu, yeni konumu ekle
+			barrelPosition.push(newPosition);
+
+			const barrel = barrels.create(newPosition, 50, ImageKey.barrel)
+			barrel.body.drag.set(10)
+			barrel.setCollideWorldBounds(true);
+		}
+
+		barrels.children.iterate((child) => {
+			// @ts-ignore
+			//  Give each star a slightly different bounce
+			child.setBounceY(Phaser.Math.FloatBetween(0.2, 0.5));
+			return true
+		});
+		physics.add.collider(barrels, platforms);
+		physics.add.overlap(player, barrels, this.collectItem, null);
+		physics.add.collider(bombs, barrels, this.hitBarrel, null);
+	}
+
+	collectItem(player: Phaser.Physics.Arcade.Sprite, item: TItem) {
+		item.destroy();
+		base.sound.play(SoundKeys.heal)
+
+		//  Add and update the score
+		MainGame.Score += 10;
+		scoreText.setText(`Puan: ${MainGame.Score} - ${MainGame.HighScore} 🏆`);
+	}
+
+	hitBomb(player: Phaser.Physics.Arcade.Sprite, bomb: TItem) {
+		const heart = base.hearts.pop()
+		base.tweens.add({
+			targets: heart,
+			x: base.camera.width / 2,
+			ease: 'Quad.out',
+			duration: 500,
+		});
+		bomb.destroy()
+
+		if(base.hearts.length == 0) {
+			base.physics.pause();
+			player.setTint(0xff0000);
+			player.anims.play("turn");
+			gameOver = true;
+			
+			base.sound.play(SoundKeys.bomb);
+
+			if (MainGame.HighScore <= 0 || MainGame.HighScore < MainGame.Score) {
+				MainGame.HighScore = MainGame.Score
+				Firebase.setScore(MainGame.Score)
+			}
+	
+			Firebase.setHighScore(MainGame.Score)
+
+			base.scene.pause(MainGame.Name);
+			base.scene.launch(GameOver.Name)
+		} else {
+			base.sound.play(SoundKeys.loseheart);
+			heart.destroy(true)
+		}
+	}
+
+	hitBarrel(bomb: Phaser.Physics.Arcade.Sprite, barrel: TItem) {
+		// @ts-ignore:next-line
+		let count = barrel.customData?.hitBombCount || 0
+		count++;
+		if (count >= 2) {
+			barrel.destroy();
+		} else {
+			// @ts-ignore:next-line
+			barrel.customData = {
+				hitBombCount: count
+			}
+			// @ts-ignore:next-line
+			barrel.setTexture(ImageKey.barrelDanger);
+		}
+	}
+
+	static pauseGame(){
+		base.scene.pause(MainGame.Name);
+		base.scene.launch(GamePause.Name);
 	}
 }

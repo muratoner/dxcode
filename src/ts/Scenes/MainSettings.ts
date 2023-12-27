@@ -8,8 +8,8 @@ export default class MainSettings extends Phaser.Scene {
 
 	public create(): void {
 		Utilities.LogSceneMethodEntry("MainSettings", "create");
-		this.input.setDefaultCursor('url(assets/cursor.png), pointer');
-
+		this.input.createDefaultCursor();
+		
 		const image = this.add.image(this.cameras.main.width / 2, this.cameras.main.height / 2, 'talltrees')
 		const scaleX = this.cameras.main.width / image.width
 		const scaleY = this.cameras.main.height / image.height

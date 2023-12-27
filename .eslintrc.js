@@ -12,7 +12,8 @@ module.exports = {
 	rules: {
 		"indent": ["warn", "tab"],
 		"no-console": ["warn"],
-		"no-multiple-empty-lines": ["warn", { "max": 1 }]
+		"no-multiple-empty-lines": ["warn", { "max": 1 }],
+		"@typescript-eslint/no-this-alias": "warn"
 	},
 	env: {
 		"browser": true,

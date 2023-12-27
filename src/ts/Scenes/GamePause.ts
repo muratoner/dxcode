@@ -8,8 +8,8 @@ export default class GamePause extends Phaser.Scene {
 
 	public create(): void {
 		Utilities.LogSceneMethodEntry("GamePause", "create");
-		this.input.setDefaultCursor('url(assets/cursor.png), pointer');
-		
+		this.input.createDefaultCursor();
+				
 		const gamePauseText = this.add.text(this.cameras.main.width / 2, this.cameras.main.height / 2, 'Duraklatıldı', {
 			fontFamily: 'FontName',
 			fontSize: '32px',

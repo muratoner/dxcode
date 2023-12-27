@@ -9,34 +9,29 @@ import MainSettings from "./Scenes/MainSettings";
 import Preloader from "./Scenes/Preloader";
 import SplashScreen from "./Scenes/SplashScreen";
 import Utilities from "./Utilities";
-import InputTextPlugin from 'phaser3-rex-plugins/plugins/inputtext-plugin.js';
+import './Prototypes/InputPlugin'
+import Firebase from './Utilities/Firebase';
 
-const gameConfig: Phaser.Core.Types.GameConfig = {
+const gameConfig: Phaser.Types.Core.GameConfig = {
 	physics: {
 		default: 'arcade',
 		arcade: {
 			gravity: { y: 300 },
-			debug: false,
+			debug: true,
 		}
 	},
-	plugins: {
-		global: [{
-			key: 'rexInputTextPlugin',
-			plugin: InputTextPlugin,
-			start: true
-		},
-		]
-	},
-	width: 800,
-	height: 600,
+	width: 1280,
+	height: 720,
 	type: Phaser.AUTO,
 	parent: "content",
-	title: "Starter Project for Phaser 3 with Visual Studio Code, TypeScript, and NodeJS"
+	title: "Ctrl+Zzz DxCode Challenge Game"
 };
 
 export default class Game extends Phaser.Game {
-	constructor(config: Phaser.Core.Types.GameConfig) {
+	constructor(config: Phaser.Types.Core.GameConfig) {
 		Utilities.LogSceneMethodEntry("Game", "constructor");
+
+		Firebase.initialize()
 
 		super(config);
 

@@ -1,6 +1,7 @@
 import { collection, getDocs, limit, orderBy, query } from "firebase/firestore";
 import Utilities from "../Utilities";
 import MainGame from "./MainGame";
+import Firebase from "../Utilities/Firebase";
 let enterKey;
 
 export default class GameOver extends Phaser.Scene {
@@ -12,8 +13,8 @@ export default class GameOver extends Phaser.Scene {
 	public create(): void {
 		Utilities.LogSceneMethodEntry("GameOver", "create");
 
-		this.input.setDefaultCursor('url(assets/cursor.png), pointer');
-
+		this.input.createDefaultCursor();
+		
 		const r = this.add.graphics();
 		r.setPosition(this.cameras.main.width / 2 - 155, 5)
 		r.fillStyle(0xffffff, 1);
@@ -40,7 +41,7 @@ export default class GameOver extends Phaser.Scene {
 		enterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER)
 
 		this.time.delayedCall(500, () => {
-			const citiesRef = query(collection(MainGame.databaseFireStore, "highscores"), orderBy("score", "desc"), limit(10));
+			const citiesRef = query(collection(Firebase.databaseFireStore, "highscores"), orderBy("score", "desc"), limit(10));
 			getDocs(citiesRef).then((snapshot) => {
 				if (!snapshot.empty) {
 					const docs = snapshot.docs
