@@ -2,6 +2,7 @@ import InputText from 'phaser3-rex-plugins/plugins/inputtext.js';
 import Utilities from "../Utilities";
 import MainGame from "./MainGame";
 import MainSettings from "./MainSettings";
+import { SceneKeys } from '../Utilities/Keys';
 
 let characterImage: Phaser.GameObjects.Image
 let enterKey;
@@ -9,13 +10,12 @@ let enterKey;
 export default class MainMenu extends Phaser.Scene {
 	inputText: InputText
 
-	/**
-	 * Unique name of the scene.
-	 */
-	public static Name = "MainMenu";
+	constructor() {
+		super({key: SceneKeys.MainMenu})
+	}
 
 	public create(): void {
-		Utilities.LogSceneMethodEntry("MainMenu", "create");
+		Utilities.LogSceneMethodEntry(SceneKeys.MainMenu, "create");
 		this.input.createDefaultCursor();
 
 		// Kullanıcıdan ismi al
@@ -88,7 +88,7 @@ export default class MainMenu extends Phaser.Scene {
 
 		newGameText.setShadow(1, 1, 'rgba(0,0,0,0.9)', 2);
 		newGameText.setInteractive();
-		newGameText.on("pointerdown", () => { this.scene.start(MainGame.Name); }, this);
+		newGameText.on("pointerdown", () => { this.scene.start(SceneKeys.MainGame); }, this);
 
 		const settingsText = this.add.text(this.cameras.main.centerX, textYPosition + 75, "Nasıl Oynanır");
 		settingsText.setOrigin(0.5);
@@ -125,6 +125,6 @@ export default class MainMenu extends Phaser.Scene {
 
 	public update(): void {
 		if (Phaser.Input.Keyboard.JustDown(enterKey))
-			this.scene.start(MainGame.Name);
+			this.scene.start(SceneKeys.MainGame);
 	}
 }

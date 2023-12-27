@@ -1,7 +1,7 @@
 import { Colors } from "../UI/Colors";
 import Utilities from "../Utilities";
 import Firebase from "../Utilities/Firebase";
-import MainGame from "./MainGame";
+import { SceneKeys } from "../Utilities/Keys";
 
 export default class GameOver extends Phaser.Scene {
 	/**
@@ -29,8 +29,8 @@ export default class GameOver extends Phaser.Scene {
 		this.add.textx(camera.width / 2, camera.height / 2 + 250, '"Maalesef, bu seviyede dünya biraz daha karmaşık hale geldi.\nAncak kahraman, geri dönüş yaparak sürdürülebilir bir geleceğin temellerini atabilir.\nOyun bitmedi, asıl macera şimdi başlıyor!\nDaha temiz bir dünya için yeniden başla ve doğanın kahramanı ol"', 'default', centerText).setOrigin(.5);
 
 		this.input.keyboard.on("keydown-ENTER",() => {
-			this.scene.start(MainGame.Name)
-			this.scene.stop(GameOver.Name);
+			this.scene.start(SceneKeys.MainGame)
+			this.scene.stop(SceneKeys.GameOver);
 		})
 
 		this.time.delayedCall(500, async () => {

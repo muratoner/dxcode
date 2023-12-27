@@ -12,6 +12,7 @@ import SecretChapter from "./Scenes/SecretChapter";
 import SplashScreen from "./Scenes/SplashScreen";
 import Utilities from "./Utilities";
 import Firebase from './Utilities/Firebase';
+import { SceneKeys } from './Utilities/Keys';
 
 const gameConfig: Phaser.Types.Core.GameConfig = {
 	physics: {
@@ -36,16 +37,17 @@ export default class Game extends Phaser.Game {
 
 		super(config);
 
-		this.scene.add(Boot.Name, Boot);
-		this.scene.add(Preloader.Name, Preloader);
-		this.scene.add(SplashScreen.Name, SplashScreen);
-		this.scene.add(MainMenu.Name, MainMenu);
-		this.scene.add(MainGame.Name, MainGame);
-		this.scene.add(SecretChapter.Name, SecretChapter);
-		this.scene.add(GameOver.Name, GameOver);
-		this.scene.add(GamePause.Name, GamePause);
-		this.scene.add(MainSettings.Name, MainSettings);
-		this.scene.start(Boot.Name);
+		this.scene.add(SceneKeys.Boot, Boot);
+		this.scene.add(SceneKeys.Preloader, Preloader);
+		this.scene.add(SceneKeys.SplashScreen, SplashScreen);
+		this.scene.add(SceneKeys.MainMenu, MainMenu);
+		this.scene.add(SceneKeys.MainGame, MainGame);
+		this.scene.add(SceneKeys.SecretChapter, SecretChapter);
+		this.scene.add(SceneKeys.GameOver, GameOver);
+		this.scene.add(SceneKeys.GamePause, GamePause);
+		this.scene.add(SceneKeys.MainSettings, MainSettings);
+		
+		this.scene.start(SceneKeys.Boot);
 	}
 }
 

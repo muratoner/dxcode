@@ -1,4 +1,5 @@
 import Utilities from "../Utilities";
+import { SceneKeys } from "../Utilities/Keys";
 import MainMenu from "./MainMenu";
 export default class MainSettings extends Phaser.Scene {
 	/**
@@ -71,6 +72,6 @@ export default class MainSettings extends Phaser.Scene {
 			.setFontFamily("FontName").setFontSize(titleSize).setFill("#1b5397")
 			.setInteractive();
 		backText.setShadow(1, 1, 'rgba(0,0,0,0.9)', 2);
-		backText.on("pointerdown", () => { this.scene.start(MainMenu.Name); }, this);
+		backText.on("pointerdown", () => { this.scene.start(SceneKeys.MainMenu); }, this);
 	}
 }

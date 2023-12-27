@@ -1,4 +1,5 @@
 import Utilities from "../Utilities";
+import { SceneKeys } from "../Utilities/Keys";
 import MainGame from "./MainGame";
 import SecretChapter from "./SecretChapter";
 let enterKey;
@@ -44,12 +45,12 @@ export default class GamePause extends Phaser.Scene {
 		if (SecretChapter.IsActive) {
 			if (Phaser.Input.Keyboard.JustDown(enterKey)) {
 				SecretChapter.IsActive = false
-				this.scene.resume(SecretChapter.Name);
+				this.scene.resume(SceneKeys.SecretChapter);
 				this.scene.stop(GamePause.Name);
 			}
 		} else {
 			if (Phaser.Input.Keyboard.JustDown(enterKey)) {
-				this.scene.resume(MainGame.Name);
+				this.scene.resume(SceneKeys.MainGame);
 				this.scene.stop(GamePause.Name);
 			}
 		}
