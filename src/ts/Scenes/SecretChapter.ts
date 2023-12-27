@@ -38,6 +38,8 @@ export default class SecretChapter extends Phaser.Scene {
 	public create(): void {
 		base = this
 		this.input.createDefaultCursor();
+
+		let countdown = 20
 		
 		SecretChapter.IsActive = true
 
@@ -49,21 +51,7 @@ export default class SecretChapter extends Phaser.Scene {
 		triggerTimerGameEnd = this.time.addEvent({
 			callback: this.timerEventGameEnd,
 			callbackScope: this,
-			delay: 2000000000,
-			loop: true
-		});
-
-		const countdownText = this.add.textx(16, 16, 20, {
-			fontSize: "32px",
-			fontFamily: 'FontName'
-		});
-
-		triggerTimerCountdown = this.time.addEvent({
-			callback: () => {
-
-			},
-			callbackScope: this,
-			delay: 1000,
+			delay: countdown * 1000,
 			loop: true
 		});
 
@@ -129,7 +117,7 @@ export default class SecretChapter extends Phaser.Scene {
 		cursors = this.input.keyboard.createCursorKeys();
 
 		this.physics.add.collider(player, platforms);
-		// this.physics.add.collider(player, secretCircle, this.timerEventGameEnd, null);
+		this.physics.add.collider(player, secretCircle, this.timerEventGameEnd, null);
 		
 		scoreText = this.add.text(16, 16, `Puan: ${MainGame.Score} - ${MainGame.HighScore} 🏆`, {
 			fontSize: "32px",
@@ -145,6 +133,18 @@ export default class SecretChapter extends Phaser.Scene {
 
 		muteButton.on('pointerdown', this.updateMuteIcon);
 		this.input.keyboard.on('keydown-M', this.updateMuteIcon);
+
+		const countdownText = this.add.textx(camera.width / 2, 40, countdown.toString(), 'h1').setOrigin(0.5, 0).setDepth(1);
+
+		triggerTimerCountdown = this.time.addEvent({
+			callback: () => {
+				countdown--;
+				countdownText.setText(countdown.toString())
+			},
+			callbackScope: this,
+			delay: 1000,
+			loop: true
+		});
 	}
 
 	public update() {
