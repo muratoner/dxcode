@@ -2,6 +2,7 @@ import { collection, getDocs, limit, orderBy, query } from "firebase/firestore";
 import Utilities from "../Utilities";
 import MainGame from "./MainGame";
 import Firebase from "../Utilities/Firebase";
+import { SceneKeys } from "../Utilities/Keys";
 let enterKey;
 
 export default class GameOver extends Phaser.Scene {
@@ -66,7 +67,7 @@ export default class GameOver extends Phaser.Scene {
 
 	public update() {
 		if (Phaser.Input.Keyboard.JustDown(enterKey)){
-			this.scene.start(MainGame.Name)
+			this.scene.start(SceneKeys.MainGame)
 			this.scene.stop(GameOver.Name);
 		}
 	}

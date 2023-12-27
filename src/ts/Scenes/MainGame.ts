@@ -3,9 +3,8 @@ import "firebase/firestore";
 import Utilities from "../Utilities";
 import GameOver from "./GameOver";
 import GamePause from "./GamePause";
-import SecretChapter from "./SecretChapter";
 import Firebase from "../Utilities/Firebase";
-import { ImageKey, SoundKeys } from "../Utilities/Keys";
+import { ImageKey, SceneKeys, SoundKeys } from "../Utilities/Keys";
 
 let player: Phaser.Physics.Arcade.Sprite;
 let cursors: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -16,7 +15,6 @@ let base: MainGame;
 let gameOver = false;
 let scoreText: Phaser.GameObjects.Text
 let spaceKey;
-let fKey;
 let keys;
 let muteButton: Phaser.GameObjects.Sprite;
 let level
@@ -29,13 +27,12 @@ export default class MainGame extends Phaser.Scene {
 	 *
 	 */
 	constructor() {
-		super({key: MainGame.Name});
+		super({key: SceneKeys.MainGame});
 	}
 
 	/**
 	 * Unique name of the scene.
 	 */
-	public static Name = "MainGame";
 	public static Score = 0;
 	public static HighScore = 0;
 	public static EventEmitter: Phaser.Events.EventEmitter;
@@ -43,7 +40,7 @@ export default class MainGame extends Phaser.Scene {
 	camera: Phaser.Cameras.Scene2D.Camera
 
 	public create(): void {
-		Utilities.LogSceneMethodEntry("MainGame", "create");
+		Utilities.LogSceneMethodEntry(MainGame.name, "create");
 
 		base = this
 
@@ -58,7 +55,7 @@ export default class MainGame extends Phaser.Scene {
 		const character = Utilities.getCharacterName()
 		this.camera = this.cameras.main
 
-		const image = this.add.sprite(this.camera.width / 2, this.camera.height / 2, 'talltrees')
+		const image = this.add.sprite(this.camera.width / 2, this.camera.height / 2, ImageKey.talltrees)
 		const scaleX = this.camera.width / image.width
 		const scaleY = this.camera.height / image.height
 		const scale = Math.max(scaleX, scaleY)
@@ -132,7 +129,7 @@ export default class MainGame extends Phaser.Scene {
 		keys = keyboard.addKeys('W,A,S,D,M');
 
 		keyboard.on('keydown-ENTER', () => {
-			this.scene.pause(MainGame.Name);
+			this.scene.pause(SceneKeys.MainGame);
 			this.scene.launch(GamePause.Name);
 		})
 
@@ -146,7 +143,7 @@ export default class MainGame extends Phaser.Scene {
 			}
 		})
 		
-		muteButton = this.add.sprite(this.camera.width - 50, 35, this.sound.mute ? ImageKey.muteButton : ImageKey.soundButton).setInteractive();
+		muteButton = this.add.sprite(this.camera.width - 50, 35, this.sound.mute ? ImageKey.mute : ImageKey.sound).setInteractive();
 		muteButton.on('pointerdown', this.updateMuteIcon);
 		keyboard.on('keydown-M', this.updateMuteIcon);
 
@@ -157,8 +154,10 @@ export default class MainGame extends Phaser.Scene {
 		MainGame.EventEmitter.on('updateScore', this.handler, this);
 
 		for (let i = 0; i < 3; i++) {
-			this.hearts.push(this.add.sprite(this.camera.width - 20 - (i * 40), this.camera.height - 20, 'heart'))
+			this.hearts.push(this.add.sprite(this.camera.width - 20 - (i * 40), this.camera.height - 20, ImageKey.heart))
 		}
+
+		this.scene.launch(SceneKeys.SecretChapter)
 	}
 
 	public update() {
@@ -205,11 +204,11 @@ export default class MainGame extends Phaser.Scene {
 			level += 1;
 
 			if (level % 5 == 0) {
-				this.scene.pause(MainGame.Name);
-				this.scene.launch(SecretChapter.Name)
+				this.scene.pause(SceneKeys.MainGame);
+				this.scene.launch(SceneKeys.SecretChapter)
 			}
 
-			const bomb = bombs.create(x, 16, "bomb");
+			const bomb = bombs.create(x, 16, ImageKey.bomb);
 			bomb.setBounce(1);
 			bomb.setCollideWorldBounds(true);
 			bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
@@ -222,7 +221,7 @@ export default class MainGame extends Phaser.Scene {
 		platforms = this.physics.add.staticGroup();
 
 		function createPlatform(x: number, y: number, scale = 1.7) {
-			platforms.create(x, y, 'ground').setScale(scale).refreshBody();
+			platforms.create(x, y, ImageKey.platform).setScale(scale).refreshBody();
 		}
 
 		//  Here we create the ground.
@@ -247,10 +246,10 @@ export default class MainGame extends Phaser.Scene {
 		// Ses durumuna göre iconu değiştirin
 		if (base.sound.mute) {
 			base.sound.setMute(false)
-			muteButton.setTexture(ImageKey.soundButton);
+			muteButton.setTexture(ImageKey.sound);
 		} else {
 			base.sound.setMute(true)
-			muteButton.setTexture(ImageKey.muteButton);
+			muteButton.setTexture(ImageKey.mute);
 		}
 	}
 
@@ -313,7 +312,7 @@ export default class MainGame extends Phaser.Scene {
 			targets: heart,
 			x: base.camera.width / 2,
 			ease: 'Quad.out',
-			duration: 500,
+			duration: 5000,
 		});
 		bomb.destroy()
 
@@ -332,7 +331,7 @@ export default class MainGame extends Phaser.Scene {
 	
 			Firebase.setHighScore(MainGame.Score)
 
-			base.scene.pause(MainGame.Name);
+			base.scene.pause(SceneKeys.MainGame);
 			base.scene.launch(GameOver.Name)
 		} else {
 			base.sound.play(SoundKeys.loseheart);
@@ -357,7 +356,7 @@ export default class MainGame extends Phaser.Scene {
 	}
 
 	static pauseGame(){
-		base.scene.pause(MainGame.Name);
+		base.scene.pause(SceneKeys.MainGame);
 		base.scene.launch(GamePause.Name);
 	}
 }
