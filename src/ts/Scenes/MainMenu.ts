@@ -17,9 +17,9 @@ export default class MainMenu extends Phaser.Scene {
 	public create(): void {
 		Utilities.LogSceneMethodEntry("MainMenu", "create");
 		this.input.createDefaultCursor();
-		
+
 		// Kullanıcıdan ismi al
-		let playerName = localStorage.getItem('playerName')
+		let playerName = Utilities.getPlayerName()
 		if (!playerName?.trim()) {
 			playerName = prompt('Skor tablosunda kullanılacak isminizi girin:');
 			if (!playerName?.trim()) {
@@ -33,7 +33,7 @@ export default class MainMenu extends Phaser.Scene {
 		const scaleY = this.cameras.main.height / image.height
 		const scale = Math.max(scaleX, scaleY)
 		image.setScale(scale).setScrollFactor(0)
-		
+
 		this.add.text(50, 10, 'Tam Ekran')
 			.setInteractive()
 			.setFontFamily("FontName")
@@ -66,9 +66,9 @@ export default class MainMenu extends Phaser.Scene {
 				localStorage.setItem('playerName', playerName)
 				playerNameText.setText(playerName.slice(0, 20))
 			}, this);
-			
+
 		const textYPosition = this.cameras.main.height / 3;
-		
+
 		const helloMessage = this.add.text(this.cameras.main.centerX, this.cameras.main.height - 100, "\"Doğamıza sahip çıkarak, dünyayı temiz tutalım,\nçünkü temiz bir dünya, sağlıklı bir geleceğin temelidir.\"");
 		helloMessage
 			.setFontFamily("FontName")
@@ -103,7 +103,7 @@ export default class MainMenu extends Phaser.Scene {
 			.setOrigin(0.5);
 		changeSkin.setShadow(1, 1, 'rgba(0,0,0,0.9)', 2);
 		changeSkin.setInteractive();
-		changeSkin.on("pointerdown", () => { 
+		changeSkin.on("pointerdown", () => {
 			const characterSkin = localStorage.getItem('characterSkin')
 			const newCharacterSkin = characterSkin == "female" ? 'male' : 'female'
 			localStorage.setItem('characterSkin', newCharacterSkin)
@@ -112,7 +112,7 @@ export default class MainMenu extends Phaser.Scene {
 		}, this);
 
 		characterImage = this.add.image(this.cameras.main.centerX, textYPosition + 210, Utilities.getCharacterName()).setInteractive()
-		characterImage.on("pointerdown", () => { 
+		characterImage.on("pointerdown", () => {
 			const characterSkin = localStorage.getItem('characterSkin')
 			const newCharacterSkin = characterSkin == "female" ? 'male' : 'female'
 			localStorage.setItem('characterSkin', newCharacterSkin)

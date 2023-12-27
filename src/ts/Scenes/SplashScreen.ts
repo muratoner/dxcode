@@ -1,6 +1,7 @@
 import Utilities from "../Utilities";
 import MainGame from "./MainGame";
 import MainMenu from "./MainMenu";
+import GameOver from "./GameOver";
 
 export default class SplashScreen extends Phaser.Scene {
 	/**
@@ -14,6 +15,8 @@ export default class SplashScreen extends Phaser.Scene {
 
 	public create(): void {
 		Utilities.LogSceneMethodEntry("SplashScreen", "create");
+
+		this.scene.start(GameOver.Name)
 
 		this.input.createDefaultCursor();
 

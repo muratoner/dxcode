@@ -1,15 +1,16 @@
 import 'phaser';
+import './Plugins/InputPlugin';
+import './Plugins/TextPlugin';
 import Boot from "./Scenes/Boot";
 import GameOver from './Scenes/GameOver';
-import MainGame from "./Scenes/MainGame";
 import GamePause from "./Scenes/GamePause";
+import MainGame from "./Scenes/MainGame";
 import MainMenu from "./Scenes/MainMenu";
-import SecretChapter from "./Scenes/SecretChapter";
 import MainSettings from "./Scenes/MainSettings";
 import Preloader from "./Scenes/Preloader";
+import SecretChapter from "./Scenes/SecretChapter";
 import SplashScreen from "./Scenes/SplashScreen";
 import Utilities from "./Utilities";
-import './Prototypes/InputPlugin'
 import Firebase from './Utilities/Firebase';
 
 const gameConfig: Phaser.Types.Core.GameConfig = {
