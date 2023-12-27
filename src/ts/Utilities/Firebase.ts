@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { Database, getDatabase, ref, set } from "firebase/database";
-import { Firestore, doc, getDoc, getFirestore, setDoc } from "firebase/firestore";
+import { Firestore, collection, doc, getDoc, getDocs, getFirestore, limit, orderBy, query, setDoc } from "firebase/firestore";
 
 export default class Firebase {
 	public static database: Database;
@@ -33,5 +33,10 @@ export default class Firebase {
 				await setDoc(doc(this.databaseFireStore, "highscores", localStorage.getItem('playerName')), {score});
 			}
 		})
+	}
+
+	public static async getHighScores(){
+		const res = await getDocs(query(collection(this.databaseFireStore, "highscores"), orderBy("score", "desc"), limit(10)))
+		return res.docs
 	}
 }

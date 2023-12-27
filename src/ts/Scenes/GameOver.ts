@@ -1,9 +1,7 @@
-import { collection, getDocs, limit, orderBy, query } from "firebase/firestore";
+import { Colors } from "../UI/Colors";
 import Utilities from "../Utilities";
-import MainGame from "./MainGame";
 import Firebase from "../Utilities/Firebase";
 import { SceneKeys } from "../Utilities/Keys";
-let enterKey;
 
 export default class GameOver extends Phaser.Scene {
 	/**
@@ -12,63 +10,46 @@ export default class GameOver extends Phaser.Scene {
 	public static Name = "GameOver";
 
 	public create(): void {
-		Utilities.LogSceneMethodEntry("GameOver", "create");
+		Utilities.LogSceneMethodEntry(GameOver.Name, "create");
 
 		this.input.createDefaultCursor();
-		
+
+		const camera = this.cameras.main
+
 		const r = this.add.graphics();
-		r.setPosition(this.cameras.main.width / 2 - 155, 5)
+		r.setPosition(camera.width / 2 - 155, 5)
 		r.fillStyle(0xffffff, 1);
-		r.fillRoundedRect(8, 8, 330, 300, 8);
+		r.fillRoundedRect(8, 8, 330, 400, 8);
 
-		const gameOverText = this.add.text(this.cameras.main.width / 2, this.cameras.main.height / 2 + 85, 'Game Over\nPress Enter to Restart', {
-			fontFamily: Utilities.getFontName(),
-			fontSize: '32px',
-			color: '#1b5397',
+		const centerText = {
 			align: 'center'
-		});
-		gameOverText.setOrigin(0.5);
-		gameOverText.setShadow(1, 1, 'rgba(0,0,0,0.9)', 2);
-
-		const gamePauseDesc = this.add.text(this.cameras.main.width / 2, this.cameras.main.height - 110, '"Maalesef, bu seviyede dünya biraz daha karmaşık hale geldi.\nAncak kahraman, geri dönüş yaparak sürdürülebilir bir geleceğin temellerini atabilir.\nOyun bitmedi, asıl macera şimdi başlıyor!\nDaha temiz bir dünya için yeniden başla ve doğanın kahramanı ol"', {
-			fontFamily: 'FontName',
-			fontSize: '20px',
-			color: '#1b5397',
-			align: 'center'
-		});
-		gamePauseDesc.setOrigin(0.5);
-		gamePauseDesc.setShadow(1, 1, 'rgba(0,0,0,0.9)', 2);
-
-		enterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER)
-
-		this.time.delayedCall(500, () => {
-			const citiesRef = query(collection(Firebase.databaseFireStore, "highscores"), orderBy("score", "desc"), limit(10));
-			getDocs(citiesRef).then((snapshot) => {
-				if (!snapshot.empty) {
-					const docs = snapshot.docs
-					docs .forEach((item, i) => {
-						const data = item.data()
-						if(item) {
-							this.add.text(this.cameras.main.width / 2 - 130, 25 + (i * 28), `${i+1}. ${item.id.slice(0, 15)} - ${data.score}`, {
-								fontFamily: 'FontName',
-								fontSize: '20px',
-								color: '#1b5397'					
-							});
-						}
-					})
-				} else {
-			  console.log("No data available");
-				}
-		  }).catch((error) => {
-				console.error(error);
-		  });
-		});
-	}
-
-	public update() {
-		if (Phaser.Input.Keyboard.JustDown(enterKey)){
-			this.scene.start(SceneKeys.MainGame)
-			this.scene.stop(GameOver.Name);
 		}
+		this.add.textx(camera.width / 2, camera.height / 2 + 120, 'Tekrar Dene\nYeniden başlamak için sadece Enter tuşuna basabilirsin! 🎮', 'h1', centerText).setOrigin(.5);
+
+		this.add.textx(camera.width / 2, camera.height / 2 + 250, '"Maalesef, bu seviyede dünya biraz daha karmaşık hale geldi.\nAncak kahraman, geri dönüş yaparak sürdürülebilir bir geleceğin temellerini atabilir.\nOyun bitmedi, asıl macera şimdi başlıyor!\nDaha temiz bir dünya için yeniden başla ve doğanın kahramanı ol"', 'default', centerText).setOrigin(.5);
+
+		this.input.keyboard.on("keydown-ENTER",() => {
+			this.scene.start(SceneKeys.MainGame)
+			this.scene.stop(SceneKeys.GameOver);
+		})
+
+		this.time.delayedCall(500, async () => {
+			const res = await Firebase.getHighScores()
+			if (res.length > 0) {
+				res.forEach((item, i) => {
+					const self = item.id == Utilities.getPlayerName()
+					const data = item.data()
+					if(item) {
+						const style: Phaser.Types.GameObjects.Text.TextStyle = {
+							color: self ? Colors.GameOverSelfTextColor :  i == 0 ? Colors.GameOverCampionTextColor : Colors.DefaultTextColor,
+							align: 'left'
+						}
+						this.add.textx(camera.width / 2 - 120, 25 + (i * 38), `${i+1}. ${item.id.slice(0, 15)} - ${data.score} ${i == 0 ? '🏆' : ''} ${self ? '<-' : ''}`, i == 0 ? 'h3' : 'h5', style).setOrigin(0);
+					}
+				})
+			} else {
+				Utilities.Log("No data available")
+			}
+		});
 	}
 }

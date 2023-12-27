@@ -28,5 +28,11 @@ export default class Utilities {
 		return localStorage.getItem('characterSkin') || 'male'
 	}
 
-	
+	public static getPlayerName() {
+		return localStorage.getItem('playerName')
+	}
+
+	public static setPlayerName(playerName: string) {
+		return localStorage.setItem('playerName', playerName)
+	}
 }
