@@ -1,12 +1,9 @@
 import InputText from 'phaser3-rex-plugins/plugins/inputtext.js';
 import Utilities from "../Utilities";
-import MainGame from "./MainGame";
 import MainSettings from "./MainSettings";
 import { SceneKeys } from '../Utilities/Keys';
 
 let characterImage: Phaser.GameObjects.Image
-let enterKey;
-
 export default class MainMenu extends Phaser.Scene {
 	inputText: InputText
 
@@ -120,11 +117,18 @@ export default class MainMenu extends Phaser.Scene {
 			characterImage.setTexture(newCharacterSkin)
 		}, this);
 
-		enterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER)
-	}
-
-	public update(): void {
-		if (Phaser.Input.Keyboard.JustDown(enterKey))
+		this.input.keyboard.on('keydown-ENTER', () => {
 			this.scene.start(SceneKeys.MainGame);
+		})
+
+		this.input.keyboard.on('keydown-F', () => {
+			if (this.scale.isFullscreen) {
+				this.scale.stopFullscreen();
+				// On stop fulll screen
+			} else {
+				this.scale.startFullscreen();
+				// On start fulll screen
+			}
+		})
 	}
 }
