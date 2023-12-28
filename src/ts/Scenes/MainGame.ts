@@ -156,8 +156,6 @@ export default class MainGame extends Phaser.Scene {
 		for (let i = 0; i < 3; i++) {
 			this.hearts.push(this.add.sprite(this.camera.width - 20 - (i * 40), this.camera.height - 20, ImageKey.heart))
 		}
-
-		this.scene.launch(SceneKeys.SecretChapter)
 	}
 
 	public update() {

@@ -4,7 +4,6 @@ import { ImageKey, SceneKeys } from "../Utilities/Keys";
 export default class SplashScreen extends Phaser.Scene {
 	public create(): void {
 		Utilities.LogSceneMethodEntry(SceneKeys.SplashScreen, "create");
-		this.scene.start(SceneKeys.MainGame)
 
 		this.input.createDefaultCursor();
 
