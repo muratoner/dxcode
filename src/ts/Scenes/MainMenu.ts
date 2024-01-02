@@ -1,22 +1,29 @@
+import InputText from 'phaser3-rex-plugins/plugins/inputtext.js';
 import Utilities from "../Utilities";
-import MainGame from "./MainGame";
 import MainSettings from "./MainSettings";
+import { SceneKeys } from '../Utilities/Keys';
 
 let characterImage: Phaser.GameObjects.Image
-let enterKey;
-
 export default class MainMenu extends Phaser.Scene {
-	/**
-	 * Unique name of the scene.
-	 */
-	public static Name = "MainMenu";
+	inputText: InputText
 
-	public preload(): void {
-		// Preload as needed.
+	constructor() {
+		super({key: SceneKeys.MainMenu})
 	}
 
 	public create(): void {
-		Utilities.LogSceneMethodEntry("MainMenu", "create");
+		Utilities.LogSceneMethodEntry(SceneKeys.MainMenu, "create");
+		this.input.createDefaultCursor();
+
+		// Kullanıcıdan ismi al
+		let playerName = Utilities.getPlayerName()
+		if (!playerName?.trim()) {
+			playerName = prompt('Skor tablosunda kullanılacak isminizi girin:');
+			if (!playerName?.trim()) {
+				playerName = "Gizli Kahraman"
+			}
+			localStorage.setItem('playerName', playerName)
+		}
 
 		const image = this.add.image(this.cameras.main.width / 2, this.cameras.main.height / 2, 'talltrees')
 		const scaleX = this.cameras.main.width / image.width
@@ -24,8 +31,41 @@ export default class MainMenu extends Phaser.Scene {
 		const scale = Math.max(scaleX, scaleY)
 		image.setScale(scale).setScrollFactor(0)
 
+		this.add.text(50, 10, 'Tam Ekran')
+			.setInteractive()
+			.setFontFamily("FontName")
+			.setFontSize(15)
+			.setFill("#1b5397")
+			.setAlign("center")
+			.setOrigin(0.5)
+
+			.on('pointerdown', function () {
+				if (this.scale.isFullscreen) {
+					this.scale.stopFullscreen();
+					// On stop fulll screen
+				} else {
+					this.scale.startFullscreen();
+					// On start fulll screen
+				}
+			}, this);
+
+		const playerNameText = this.add.text(this.cameras.main.width - 75, 10, playerName.slice(0, 20))
+			.setInteractive()
+			.setFontFamily("FontName")
+			.setFontSize(15)
+			.setFill("#1b5397")
+			.setOrigin(0.5)
+			.on('pointerdown', function () {
+				playerName = prompt('Skor tablosunda kullanılacak isminizi girin:', playerName);
+				if (!playerName?.trim()) {
+					playerName = 'Gizli Kahraman'
+				}
+				localStorage.setItem('playerName', playerName)
+				playerNameText.setText(playerName.slice(0, 20))
+			}, this);
+
 		const textYPosition = this.cameras.main.height / 3;
-		
+
 		const helloMessage = this.add.text(this.cameras.main.centerX, this.cameras.main.height - 100, "\"Doğamıza sahip çıkarak, dünyayı temiz tutalım,\nçünkü temiz bir dünya, sağlıklı bir geleceğin temelidir.\"");
 		helloMessage
 			.setFontFamily("FontName")
@@ -45,7 +85,7 @@ export default class MainMenu extends Phaser.Scene {
 
 		newGameText.setShadow(1, 1, 'rgba(0,0,0,0.9)', 2);
 		newGameText.setInteractive();
-		newGameText.on("pointerdown", () => { this.scene.start(MainGame.Name); }, this);
+		newGameText.on("pointerdown", () => { this.scene.start(SceneKeys.MainGame); }, this);
 
 		const settingsText = this.add.text(this.cameras.main.centerX, textYPosition + 75, "Nasıl Oynanır");
 		settingsText.setOrigin(0.5);
@@ -60,7 +100,7 @@ export default class MainMenu extends Phaser.Scene {
 			.setOrigin(0.5);
 		changeSkin.setShadow(1, 1, 'rgba(0,0,0,0.9)', 2);
 		changeSkin.setInteractive();
-		changeSkin.on("pointerdown", () => { 
+		changeSkin.on("pointerdown", () => {
 			const characterSkin = localStorage.getItem('characterSkin')
 			const newCharacterSkin = characterSkin == "female" ? 'male' : 'female'
 			localStorage.setItem('characterSkin', newCharacterSkin)
@@ -69,7 +109,7 @@ export default class MainMenu extends Phaser.Scene {
 		}, this);
 
 		characterImage = this.add.image(this.cameras.main.centerX, textYPosition + 210, Utilities.getCharacterName()).setInteractive()
-		characterImage.on("pointerdown", () => { 
+		characterImage.on("pointerdown", () => {
 			const characterSkin = localStorage.getItem('characterSkin')
 			const newCharacterSkin = characterSkin == "female" ? 'male' : 'female'
 			localStorage.setItem('characterSkin', newCharacterSkin)
@@ -77,11 +117,18 @@ export default class MainMenu extends Phaser.Scene {
 			characterImage.setTexture(newCharacterSkin)
 		}, this);
 
-		enterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER)
-	}
+		this.input.keyboard.on('keydown-ENTER', () => {
+			this.scene.start(SceneKeys.MainGame);
+		})
 
-	public update(): void {
-		if (Phaser.Input.Keyboard.JustDown(enterKey))
-			this.scene.start(MainGame.Name);
+		this.input.keyboard.on('keydown-F', () => {
+			if (this.scale.isFullscreen) {
+				this.scale.stopFullscreen();
+				// On stop fulll screen
+			} else {
+				this.scale.startFullscreen();
+				// On start fulll screen
+			}
+		})
 	}
 }

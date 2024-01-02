@@ -1,17 +1,20 @@
 import 'phaser';
+import './Plugins/InputPlugin';
+import './Plugins/TextPlugin';
 import Boot from "./Scenes/Boot";
 import GameOver from './Scenes/GameOver';
-import MainGame from "./Scenes/MainGame";
 import GamePause from "./Scenes/GamePause";
+import MainGame from "./Scenes/MainGame";
 import MainMenu from "./Scenes/MainMenu";
-import SecretChapter from "./Scenes/SecretChapter";
 import MainSettings from "./Scenes/MainSettings";
 import Preloader from "./Scenes/Preloader";
+import SecretChapter from "./Scenes/SecretChapter";
 import SplashScreen from "./Scenes/SplashScreen";
 import Utilities from "./Utilities";
-import InputTextPlugin from 'phaser3-rex-plugins/plugins/inputtext-plugin.js';
+import Firebase from './Utilities/Firebase';
+import { SceneKeys } from './Utilities/Keys';
 
-const gameConfig: Phaser.Core.Types.GameConfig = {
+const gameConfig: Phaser.Types.Core.GameConfig = {
 	physics: {
 		default: 'arcade',
 		arcade: {
@@ -19,37 +22,32 @@ const gameConfig: Phaser.Core.Types.GameConfig = {
 			debug: false,
 		}
 	},
-	plugins: {
-		global: [{
-			key: 'rexInputTextPlugin',
-			plugin: InputTextPlugin,
-			start: true
-		},
-		]
-	},
-	width: 800,
-	height: 600,
+	width: 1280,
+	height: 720,
 	type: Phaser.AUTO,
 	parent: "content",
-	title: "Starter Project for Phaser 3 with Visual Studio Code, TypeScript, and NodeJS"
+	title: "Ctrl+Zzz DxCode Challenge Game"
 };
 
 export default class Game extends Phaser.Game {
-	constructor(config: Phaser.Core.Types.GameConfig) {
+	constructor(config: Phaser.Types.Core.GameConfig) {
 		Utilities.LogSceneMethodEntry("Game", "constructor");
+
+		Firebase.initialize()
 
 		super(config);
 
-		this.scene.add(Boot.Name, Boot);
-		this.scene.add(Preloader.Name, Preloader);
-		this.scene.add(SplashScreen.Name, SplashScreen);
-		this.scene.add(MainMenu.Name, MainMenu);
-		this.scene.add(MainGame.Name, MainGame);
-		this.scene.add(SecretChapter.Name, SecretChapter);
-		this.scene.add(GameOver.Name, GameOver);
-		this.scene.add(GamePause.Name, GamePause);
-		this.scene.add(MainSettings.Name, MainSettings);
-		this.scene.start(Boot.Name);
+		this.scene.add(SceneKeys.Boot, Boot);
+		this.scene.add(SceneKeys.Preloader, Preloader);
+		this.scene.add(SceneKeys.SplashScreen, SplashScreen);
+		this.scene.add(SceneKeys.MainMenu, MainMenu);
+		this.scene.add(SceneKeys.MainGame, MainGame);
+		this.scene.add(SceneKeys.SecretChapter, SecretChapter);
+		this.scene.add(SceneKeys.GameOver, GameOver);
+		this.scene.add(SceneKeys.GamePause, GamePause);
+		this.scene.add(SceneKeys.MainSettings, MainSettings);
+		
+		this.scene.start(SceneKeys.Boot);
 	}
 }
 

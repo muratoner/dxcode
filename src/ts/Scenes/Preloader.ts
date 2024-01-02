@@ -1,51 +1,44 @@
 import Utilities from "../Utilities";
-import SplashScreen from "./SplashScreen";
+import { ImageKey, SceneKeys, SoundKeys } from "../Utilities/Keys";
 
 export default class Preloader extends Phaser.Scene {
-	/**
-	 * Unique name of the scene.
-	 */
-	public static Name = "Preloader";
-
-
 	public preload(): void {
 		this.addProgressBar();
+		this.input.createDefaultCursor();
+
 
 		this.load.path = "assets/";
-		this.load.image("phaser_pixel_medium_flat");
-		this.load.image("Phaser-Logo-Small");
-		this.load.image("logo-256");
-		this.load.image('arkaplan', 'backgrounds/game_background_3/game_background_3.png');
-		this.load.image('secretbg', 'backgrounds/dxcode-background.jpg');
-		this.load.image('platformdxcode', 'platform-dxcode.png');
-		this.load.image('dxcodelogo', 'dxcode-logo.png');
-		this.load.image('dxcodelogodark', 'dxcode-dark.png');
-		this.load.image('dxcodelogowhite', 'dxcode-white.png');
-		this.load.image('talltrees', 'backgrounds/colored_talltrees.png');
-		this.load.image('secretcircle', 'secret-circle.png');
+		this.load.image(ImageKey.phaserPixelMediumFlat);
+		this.load.image(ImageKey.logo256);
+		this.load.image(ImageKey.secretCircle);
+		this.load.image(ImageKey.heart);
+		this.load.image(ImageKey.sound);
+		this.load.image(ImageKey.mute);
+		this.load.image(ImageKey.platform);
+		this.load.image(ImageKey.barrel);
+		this.load.image(ImageKey.barrelDanger);
+		this.load.image(ImageKey.bomb);
+		this.load.image(ImageKey.dxcodeLogo);
+		this.load.image(ImageKey.dxcodeLogoWhite);
 
+		this.load.image(ImageKey.arkaplan, 'backgrounds/game_background_3/game_background_3.png');
+		this.load.image(ImageKey.secretbg, 'backgrounds/dxcode-background.jpg');
+		this.load.image(ImageKey.platformDxcode);
+		this.load.image(ImageKey.talltrees, 'backgrounds/colored_talltrees.png');
+		
 		this.load.spritesheet('dude', 'characters/dude.png', { frameWidth: 32, frameHeight: 48 });
 		this.load.spritesheet('male', 'characters/male.png', { frameWidth: 80, frameHeight: 110 });
 		this.load.spritesheet('female', 'characters/female.png', { frameWidth: 80, frameHeight: 110 });
 
-		this.load.audio('bomb', 'sounds/bomb.wav');
-		this.load.audio('heal', 'sounds/heal.wav');
-		this.load.image('soundButton', 'sound.png');
-		this.load.image('muteButton', 'mute.png');
-
-		this.load.image('ground', 'platform.png');
-		this.load.image('star', 'star.png');
-		this.load.image('bomb', 'bomb.png');
+		this.load.audio(SoundKeys.bomb, 'sounds/bomb.wav');
+		this.load.audio(SoundKeys.heal, 'sounds/heal.wav');
+		this.load.audio(SoundKeys.loseheart, 'sounds/lose-heart.wav');
 	}
 
 	public create(): void {
-		Utilities.LogSceneMethodEntry("Preloader", "create");
+		Utilities.LogSceneMethodEntry(SceneKeys.Preloader, this.create.name);
 
-		this.scene.start(SplashScreen.Name);
-	}
-
-	public update(): void {
-		// preload handles updates to the progress bar, so nothing should be needed here.
+		this.scene.start(SceneKeys.SplashScreen);
 	}
 
 	/**
@@ -67,7 +60,7 @@ export default class Preloader extends Phaser.Scene {
 			y: height / 2 - 50,
 			text: "Yükleniyor...",
 			style: {
-				font: "20px monospace",
+				font: "20px FontName",
 				color: outerTextColor
 			}
 		});
@@ -78,7 +71,7 @@ export default class Preloader extends Phaser.Scene {
 			y: height / 2 - 5,
 			text: "0%",
 			style: {
-				font: "18px monospace",
+				font: "18px FontName",
 				color: "#ffffff"
 			}
 		});
@@ -89,7 +82,7 @@ export default class Preloader extends Phaser.Scene {
 			y: height / 2 + 50,
 			text: "",
 			style: {
-				font: "18px monospace",
+				font: "18px FontName",
 				color: outerTextColor
 			}
 		});
