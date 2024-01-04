@@ -1,5 +1,8 @@
 # DxCode Project
 
+![image](https://github.com/muratoner/phaser-dxcode/assets/4863567/c81bb81c-375b-4a89-b021-6922813f7c13)
+
+
 ## Get Started
 
 1. Make sure [Node.js](https://nodejs.org) is installed.
